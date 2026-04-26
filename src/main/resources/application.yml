@@ -1,0 +1,80 @@
+spring:
+  application:
+    name: psd
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/psd}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  web:
+    resources:
+      static-locations: classpath:/static/,file:/app/file-storage/
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+  #internal-base-url: http://portal-application:8082   # как python будет звать spring (из docker сети)
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+#document:
+#  processor:
+#    url: ${DOCUMENT_PROCESSOR_URL:http://localhost:8000}
+#    timeout: 30000
+server:
+  port: 8070
+  address: 0.0.0.0 # Важно для доступа из контейнеров
+  sso:
+    ignore_time_checks: true
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: on_param
+    include-exception: false
+    include-message: always
+    path: /error
+#  forward-headers-strategy: framework
+
+#  servlet:
+#    session:
+#      cookie:
+#        name: PORTALSESSION
+#        http-only: true
+#        secure: true
+#        same-site: none
+portal:
+  internal-url: ${PORTAL_INTERNAL_URL:http://portal-application:8070}
+  public-url: ${PORTAL_PUBLIC_URL:https://ink-aae:8070}
+
+onlyoffice:
+  document-server:
+    api-url: ${ONLYOFFICE_API_URL:https://ink-aae:8071/web-apps/apps/api/documents/api.js}
+  jwt:
+    enabled: false # Отключите для отладк
+    secret: supersecret
+logging:
+  level:
+    com.portal: DEBUG
+    com.portal.controller.onlyOffice: DEBUG
+    org.springframework.web: DEBUG
+    org.docx4j: DEBUG
+    org.springframework.security: DEBUG
+
+file:
+  storage:
+    path: ${WORK_DIR:file-storage}
+
+app:
+  internal-token: ${APP_INTERNAL_TOKEN:supersecret-internal}
+
+#build-processor:
+#  base-url: http://document-processor:8000
+#  internal-token: supersecret-internal
+

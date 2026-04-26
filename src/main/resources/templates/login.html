@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            width: 360px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+
+        .login-title {
+            text-align: center;
+            margin: 0 0 24px;
+            font-size: 24px;
+        }
+
+        label {
+            display: block;
+            margin-top: 14px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 6px;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 11px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .error {
+            margin-top: 14px;
+            color: #b91c1c;
+            text-align: center;
+        }
+
+        .success {
+            margin-top: 14px;
+            color: #15803d;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <h1 class="login-title">Вход</h1>
+
+    <form th:action="@{/login}" method="post">
+        <label for="username">Email</label>
+        <input id="username" type="text" name="username" autocomplete="username" required>
+
+        <label for="password">Пароль</label>
+        <input id="password" type="password" name="password" autocomplete="current-password" required>
+
+        <button type="submit">Войти</button>
+    </form>
+
+    <div class="error" th:if="${param.error}">
+        Неверный email или пароль
+    </div>
+
+    <div class="success" th:if="${param.logout}">
+        Вы вышли из системы
+    </div>
+</div>
+
+</body>
+</html>

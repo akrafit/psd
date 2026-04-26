@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление пользователями</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Базовые стили */
+
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .nav-links a.active {
+            background-color: #3498db;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: white;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Стили для таблицы */
+        .table-responsive {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            padding: 1rem;
+            font-weight: 600;
+        }
+
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-top: 1px solid #dee2e6;
+        }
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .nav-links a.active {
+            background-color: #3498db;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: white;
+            color: #2c3e50;
+        }
+
+
+        /* Бейджи ролей */
+        .badge-role {
+            padding: 0.35rem 0.65rem;
+            border-radius: 50rem;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-admin {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .badge-employee {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .badge-contractor {
+            background-color: #20c997;
+            color: white;
+        }
+
+        .badge-gip{
+            background-color: #6f3abe;
+            color: white;
+        }
+
+        /* Кнопки */
+        .btn-change-role {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-change-role:hover {
+            background-color: #5a6268;
+        }
+
+        /* Всплывающие сообщения */
+        .alert-flash {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            min-width: 300px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .alert-flash.show {
+            opacity: 1;
+        }
+
+        /* Карточки статистики */
+        .stats-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stats-card h3 {
+            margin: 0;
+            font-size: 2rem;
+            color: #2c3e50;
+        }
+
+        .stats-card.admin {
+            border-left: 4px solid #dc3545;
+        }
+
+        .stats-card.employee {
+            border-left: 4px solid #0d6efd;
+        }
+
+        .stats-card.contractor {
+            border-left: 4px solid #20c997;
+        }
+
+        .stats-card.gip {
+            border-left: 4px solid #6f3abe;
+        }
+
+
+        /* Аватар пользователя */
+        .user-avatar-small {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">Конструктор ПД</div>
+        <div class="nav-links">
+            <a th:href="@{/admin}" class="btn-secondary">← Назад</a>
+            <a th:href="@{/projects}">📋 Проекты</a>
+            <a sec:authorize="hasAnyRole('ADMIN')" th:href="@{/admin}" >⚙ Панель администратора </a>
+            <div class="user-info">
+<!--                <span th:text="${user.name}">Пользователь</span>-->
+<!--                <div class="user-avatar">-->
+<!--                    <span>U</span>-->
+<!--                </div>-->
+                <form th:action="@{/logout}" method="post" style="display: inline;"
+                      onsubmit="localStorage.removeItem('onlyoffice-editor-open');">
+                    <button type="submit" class="logout-btn">Сбросить сеансы</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Управление пользователями</h1>
+        <!--        <a th:href="@{/admin}" class="btn btn-outline-secondary">-->
+        <!--            ← Назад в админ-панель-->
+        <!--        </a>-->
+    </div>
+
+    <!-- Всплывающие сообщения -->
+    <div id="alertToast" class="alert alert-flash" style="display: none;">
+        <span id="alertMessage"></span>
+        <button type="button" class="btn-close float-end" onclick="hideAlert()"></button>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <div class="stats-card admin">
+                <h6>Администраторы</h6>
+                <h3 th:text="${#lists.size(userService.getUsersByRole(T(com.portal.enums.UserRole).ADMIN))}">0</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card employee">
+                <h6>Сотрудники</h6>
+                <h3 th:text="${#lists.size(userService.getUsersByRole(T(com.portal.enums.UserRole).EMPLOYEE))}">0</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card contractor">
+                <h6>Подрядчики</h6>
+                <h3 th:text="${#lists.size(userService.getUsersByRole(T(com.portal.enums.UserRole).CONTRACTOR))}">0</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card gip">
+                <h6>ГИП</h6>
+                <h3 th:text="${#lists.size(userService.getUsersByRole(T(com.portal.enums.UserRole).GIP))}">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица пользователей -->
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Email</th>
+                <th>Дата регистрации</th>
+                <th>Роль</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td th:text="${user.id}"></td>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="user-avatar-small"
+                             th:text="${#strings.substring(user.name, 0, 1).toUpperCase()}">
+                        </div>
+                        <span th:text="${user.name}"></span>
+                    </div>
+                </td>
+                <td th:text="${user.email}"></td>
+                <td th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
+                <td>
+                    <span class="badge-role"
+                          th:classappend="'badge-' + ${user.role.name().toLowerCase()}"
+                          th:text="${user.role.name()}">
+                    </span>
+                </td>
+            </tr>
+
+            <tr th:if="${users.isEmpty()}">
+                <td colspan="5" class="text-center text-muted py-5">
+                    <div class="mb-3">👤</div>
+                    <h5>Пользователи не найдены</h5>
+                    <p class="mb-0">В системе еще нет зарегистрированных пользователей</p>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Информация о ролях -->
+    <div class="mt-4 p-3 bg-light rounded">
+        <h6>Информация о ролях:</h6>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge-role badge-admin">ADMIN</span>
+                    <span>Полный доступ ко всем функциям, но не может назначать подрядчиков</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge-role badge-employee">EMPLOYEE</span>
+                    <span>Доступ к проектам и задачам</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge-role badge-contractor">CONTRACTOR</span>
+                    <span>Ограниченный доступ</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge-role badge-gip">GIP</span>
+                    <span>Управление проектами</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Функция для показа сообщений
+    function showAlert(message, type) {
+        const alertToast = document.getElementById('alertToast');
+        const alertMessage = document.getElementById('alertMessage');
+
+        alertMessage.textContent = message;
+        alertToast.className = `alert alert-${type} alert-flash`;
+
+        alertToast.style.display = 'block';
+        setTimeout(() => {
+            alertToast.classList.add('show');
+        }, 100);
+
+        setTimeout(() => {
+            hideAlert();
+        }, 5000);
+    }
+
+    function hideAlert() {
+        const alertToast = document.getElementById('alertToast');
+        alertToast.classList.remove('show');
+        setTimeout(() => {
+            alertToast.style.display = 'none';
+        }, 300);
+    }
+
+    // Проверяем flash сообщения
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     // Проверяем URL параметры
+    //     const urlParams = new URLSearchParams(window.location.search);
+    //     if (urlParams.has('success')) {
+    //         showAlert(decodeURIComponent(urlParams.get('success')), 'success');
+    //         window.history.replaceState({}, document.title, window.location.pathname);
+    //     }
+    //     if (urlParams.has('error')) {
+    //         showAlert(decodeURIComponent(urlParams.get('error')), 'danger');
+    //         window.history.replaceState({}, document.title, window.location.pathname);
+    //     }
+    //
+    //     // Проверяем flash атрибуты
+    //     const successAlert = document.querySelector('.alert-success[th\\:if]');
+    //     if (successAlert) {
+    //         showAlert(successAlert.textContent.trim(), 'success');
+    //     }
+    //
+    //     const errorAlert = document.querySelector('.alert-danger[th\\:if]');
+    //     if (errorAlert) {
+    //         showAlert(errorAlert.textContent.trim(), 'danger');
+    //     }
+    // });
+
+    // Подтверждение изменения роли
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleForms = document.querySelectorAll('form[action*="/role"]');
+        roleForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const row = this.closest('tr');
+                const userName = row.querySelector('td:nth-child(2) span').textContent;
+                const currentRole = row.querySelector('.badge-role').textContent;
+                const newRole = this.querySelector('input[name="role"]').value;
+
+                if (!confirm(`Изменить роль пользователя "${userName}"?\nСейчас: ${currentRole}\nБудет: ${newRole}`)) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

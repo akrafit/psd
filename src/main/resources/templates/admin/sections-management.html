@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление разделами</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        /* Стили для всплывающих сообщений */
+        .alert-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .alert-toast.show {
+            opacity: 1;
+        }
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .table th {
+            border-top: none;
+            font-weight: 600;
+        }
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .nav-links a.active {
+            background-color: #3498db;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: white;
+            color: #2c3e50;
+        }
+
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">Конструктор ПД</div>
+        <div class="nav-links">
+            <a th:href="@{/admin/generals}" class="btn-secondary">← Назад</a>
+            <a th:href="@{/projects}">📋 Проекты</a>
+            <a sec:authorize="hasAnyRole('ADMIN')" th:href="@{/admin}" >⚙ Панель администратора </a>
+            <div class="user-info">
+<!--                <span th:text="${user.name}">Пользователь</span>-->
+<!--                <div class="user-avatar">-->
+<!--                    <span>U</span>-->
+<!--                </div>-->
+                <form th:action="@{/logout}" method="post" style="display: inline;"
+                      onsubmit="localStorage.removeItem('onlyoffice-editor-open');">
+                    <button type="submit" class="logout-btn">Сбросить сеансы</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+<div class="container mt-4">
+<!--    <h2>Управление разделами</h2>-->
+<!--    &lt;!&ndash; Хлебные крошки &ndash;&gt;-->
+<!--    <nav aria-label="breadcrumb" class="mb-4">-->
+<!--        <ol class="breadcrumb">-->
+<!--            <li class="breadcrumb-item"><a th:href="@{/admin/generals}">Генеральные</a></li>-->
+<!--            <li class="breadcrumb-item active">Разделы</li>-->
+<!--        </ol>-->
+<!--    </nav>-->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Управление разделами</h1>
+<!--        <a th:href="@{/admin/generals}" class="btn btn-outline-secondary">-->
+<!--            <i class="fas fa-arrow-left"></i> Назад к Генеральным-->
+<!--        </a>-->
+    </div>
+
+    <!-- Блок для всплывающих сообщений -->
+    <div id="alertToast" class="alert alert-toast" style="display: none;">
+        <span id="alertMessage"></span>
+    </div>
+
+    <!-- Форма добавления нового раздела -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0"><i class="fas fa-plus-circle"></i> Добавить новый раздел</h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/admin/generals/sections}" method="post" th:object="${newSection}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label for="name" class="form-label">Название раздела *</label>
+                        <input type="text"
+                               class="form-control"
+                               id="name"
+                               th:field="*{name}"
+                               required
+                               placeholder="Введите название раздела">
+                        <div class="form-text">Обязательное поле. Укажите понятное название раздела.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="description" class="form-label">Описание</label>
+                        <input type="text"
+                               class="form-control"
+                               id="description"
+                               th:field="*{description}">
+                        <div class="form-text">Необязательное описание</div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="visible"
+                                   th:field="*{visible}">
+                            <label class="form-check-label" for="visible">
+                                Видимый
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-plus"></i> Добавить
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Карточка с информацией -->
+    <div class="alert alert-info mb-4">
+        <h6 class="alert-heading"><i class="fas fa-info-circle"></i> Информация о разделах</h6>
+        <p class="mb-0">
+            Разделы используются для организации глав в проектах. Шаблоны файлов для разделов настраиваются
+            в детальной странице каждого генерального шаблона.
+        </p>
+    </div>
+
+    <!-- Таблица разделов -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0"><i class="fas fa-list"></i> Список разделов</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                    <tr>
+                        <th width="80">ID</th>
+                        <th>Название раздела</th>
+                        <th width="200">Видимость</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="section : ${sections}">
+                        <td th:text="${section.id}"></td>
+                        <td>
+                            <strong th:text="${section.name}"></strong>
+                            <div th:if="${section.description}" class="text-muted small" th:text="${section.description}"></div>
+                        </td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input section-visible-checkbox"
+                                       type="checkbox"
+                                       th:checked="${section.visible}"
+                                       th:attr="data-section-id=${section.id}"
+                                       onchange="updateSectionVisibility(this)">
+                                        <label class="form-check-label"
+                                       th:text="${section.visible} ? 'Видимый' : 'Скрытый'">
+                                    Видимый
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Сообщение если разделов нет -->
+                    <tr th:if="${sections.isEmpty()}">
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                            Разделы не найдены. Добавьте первый раздел с помощью формы выше.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Функция для показа сообщений
+    function showAlert(message, type) {
+        const alertToast = document.getElementById('alertToast');
+        const alertMessage = document.getElementById('alertMessage');
+
+        // Устанавливаем сообщение и тип
+        alertMessage.textContent = message;
+        alertToast.className = `alert alert-${type} alert-toast`;
+
+        // Показываем сообщение
+        alertToast.style.display = 'block';
+        setTimeout(() => {
+            alertToast.classList.add('show');
+        }, 100);
+
+        // Скрываем через 5 секунд
+        setTimeout(() => {
+            alertToast.classList.remove('show');
+            setTimeout(() => {
+                alertToast.style.display = 'none';
+            }, 300);
+        }, 5000);
+    }
+
+    // Функция для получения параметров из URL
+    function getUrlParams() {
+        const params = {};
+        const queryString = window.location.search.substring(1);
+        const pairs = queryString.split('&');
+
+        for (const pair of pairs) {
+            const [key, value] = pair.split('=');
+            if (key && value) {
+                // Декодируем URL-encoded значения
+                params[decodeURIComponent(key)] = decodeURIComponent(value.replace(/\+/g, ' '));
+            }
+        }
+        return params;
+    }
+
+    // Показываем сообщения из параметров URL после redirect
+    document.addEventListener('DOMContentLoaded', function() {
+        const params = getUrlParams();
+
+        if (params.success) {
+            showAlert(params.success, 'success');
+            // Очищаем URL от параметров сообщения
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+
+        if (params.error) {
+            showAlert(params.error, 'danger');
+            // Очищаем URL от параметров сообщения
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    });
+
+    // Автофокус на поле названия при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        const nameInput = document.getElementById('name');
+        if (nameInput) {
+            nameInput.focus();
+        }
+    });
+
+    // Подтверждение удаления (когда добавим функционал)
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteButtons = document.querySelectorAll('.btn-outline-danger');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (confirm('Вы уверены, что хотите удалить этот раздел?')) {
+                    // Здесь будет логика удаления
+                    alert('Функционал удаления будет добавлен позже');
+                }
+            });
+        });
+    });
+</script>
+<script>
+    async function updateSectionVisibility(checkbox) {
+        const sectionId = checkbox.getAttribute('data-section-id');
+        const visible = checkbox.checked;
+        const label = checkbox.closest('.form-check').querySelector('.form-check-label');
+
+        const csrfToken =
+            document.querySelector('meta[name="_csrf"]')?.getAttribute('content') ||
+            document.querySelector('input[name="_csrf"]')?.value;
+
+        checkbox.disabled = true;
+
+        try {
+            const response = await fetch(`/admin/generals/sections/${sectionId}/visibility`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {})
+                },
+                body: JSON.stringify({ visible: visible })
+            });
+
+            if (!response.ok) {
+                throw new Error('Ошибка обновления видимости');
+            }
+
+            if (label) {
+                label.textContent = visible ? 'Видимый' : 'Скрытый';
+            }
+
+            showAlert('Видимость раздела обновлена', 'success');
+        } catch (e) {
+            checkbox.checked = !visible;
+            if (label) {
+                label.textContent = checkbox.checked ? 'Видимый' : 'Скрытый';
+            }
+            showAlert(e.message || 'Не удалось обновить видимость', 'danger');
+        } finally {
+            checkbox.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${general.name} + ' - Детали'"></title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .nav-links a.active {
+            background-color: #3498db;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: white;
+            color: #2c3e50;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 90%;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Существующие стили остаются без изменений */
+        .upload-form {
+            max-width: 80%;
+            margin: 5px auto;
+            /*padding: 20px;*/
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .form-group {
+            margin-bottom: 5px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            /*padding: 8px;*/
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        /* Стили для прогресс-бара */
+        .progress-container {
+            margin: 20px 0;
+            display: none;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .progress-text {
+            text-align: center;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Стили для таблицы */
+        .template-section {
+            min-height: 60px;
+        }
+
+        .drag-drop-text {
+            text-align: center;
+            padding: 5px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            color: #666;
+            background: white;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .file-input-label {
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .file-input-label:hover {
+            background: #e9ecef;
+        }
+        .file-info {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+
+        .table th {
+            vertical-align: middle;
+            text-align: center;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .section-checkbox {
+            transform: scale(1.2);
+        }
+
+        /* Стили для функционала шаблонов в заголовках столбцов */
+        .section-header-content {
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 5px;
+        }
+        .section-info {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .section-name {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        .section-description {
+            font-size: 11px;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        .template-area {
+            width: 100%;
+            text-align: center;
+        }
+        .template-upload-area {
+            padding: 8px;
+            border: 2px dashed #dee2e6;
+            border-radius: 6px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 5px;
+        }
+        .template-upload-area:hover {
+            border-color: #6c757d;
+            background: #e9ecef;
+        }
+        .template-upload-icon {
+            font-size: 20px;
+            color: #6c757d;
+            margin-bottom: 3px;
+        }
+        .template-upload-text {
+            font-size: 11px;
+            color: #6c757d;
+            line-height: 1.2;
+        }
+        .template-file-info {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .template-file-name {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 3px;
+            word-break: break-word;
+        }
+        .template-actions {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 3px;
+        }
+        .template-action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 3px;
+            border-radius: 3px;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+        .template-action-btn:hover {
+            background-color: #e9ecef;
+        }
+        .template-download-btn {
+            color: #198754;
+        }
+        .template-download-btn:hover {
+            color: #146c43;
+        }
+        .template-open-btn {
+            color: #0d6efd;
+        }
+        .template-open-btn:hover {
+            color: #0a58ca;
+        }
+        .template-delete-btn {
+            color: #dc3545;
+        }
+        .template-delete-btn:hover {
+            color: #bb2d3b;
+        }
+        .template-upload-input {
+            display: none;
+        }
+        .template-status {
+            font-size: 10px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+        .no-template {
+            font-size: 10px;
+            color: #6c757d;
+            font-style: italic;
+        }
+        .table-container {
+            max-height: 1000px; /* или любая другая высота */
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+
+        .sticky-table thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f8f9fa; /* фон шапки */
+            z-index: 10;
+            box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
+        }
+        .custom-alert {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px;
+            background-color: #4CAF50; /* Зеленый цвет для примера */
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+        }
+        .custom-alert.show {
+            display: block;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+<div id="custom-alert" class="custom-alert"></div>
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">Конструктор ПД</div>
+        <div class="nav-links">
+            <a th:href="@{/admin/generals}" class="btn-secondary">← Назад</a>
+            <a th:href="@{/projects}">📋 Проекты</a>
+            <a sec:authorize="hasAnyRole('ADMIN')" th:href="@{/admin}" >⚙ Панель администратора </a>
+            <div class="user-info">
+<!--                <span th:text="${user.name}">Пользователь</span>-->
+<!--                <div class="user-avatar">-->
+<!--                    <span>U</span>-->
+<!--                </div>-->
+                <form th:action="@{/logout}" method="post" style="display: inline;"
+                      onsubmit="localStorage.removeItem('onlyoffice-editor-open');">
+                    <button type="submit" class="logout-btn">Сбросить сеансы</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+<!-- Main Content -->
+<div class="container">
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0" th:text="${general.name}"></h2>
+            </div>
+<!--            <div>-->
+<!--                <a th:href="@{/admin/generals}" class="btn btn-outline-secondary">-->
+<!--                    <i class="fas fa-arrow-left"></i> Назад к Генеральным-->
+<!--                </a>-->
+<!--            </div>-->
+        </div>
+
+        <!-- Информация о General -->
+
+
+
+<!--        &lt;!&ndash; Навигация &ndash;&gt;-->
+<!--        <nav aria-label="breadcrumb" class="mb-4">-->
+<!--            <ol class="breadcrumb">-->
+<!--                <li class="breadcrumb-item"><a th:href="@{/admin/generals}">Генеральные</a></li>-->
+<!--                <li class="breadcrumb-item"><a th:href="@{/admin/generals/sections}">Разделы</a></li>-->
+<!--                <li class="breadcrumb-item active" th:text="${general.name}"></li>-->
+<!--            </ol>-->
+<!--        </nav>-->
+
+
+
+        <!-- Таблица связей Глав с Разделами -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-link"></i> Привязка Глав к Разделам</h4>
+                <p class="mb-0 mt-1">Отметьте чекбоксы и нажмите "Сохранить привязки". Шаблоны загружаются в заголовках столбцов.</p>
+            </div>
+            <div class="card-body">
+                <form id="sectionsForm" th:action="@{/admin/generals/{id}/save-sections(id=${general.id})}" method="post">
+                    <div class="table-responsive table-container">
+                        <table class="table table-bordered table-hover sticky-table">
+                            <thead class="table-light">
+                            <tr>
+                                <th>№</th>
+                                <th width="40%">Глава</th>
+                                <th th:each="section : ${sections}" width="*">
+                                    <div class="section-header-content">
+                                        <div class="section-info">
+                                            <div class="section-name" th:text="${section.name}"></div>
+                                            <div class="section-description" th:if="${section.description}" th:text="${section.description}"></div>
+                                        </div>
+
+                                        <div class="template-area">
+                                            <!-- Блок для шаблона раздела -->
+                                            <div th:if="${generalSectionMap.get(section.id)}"
+                                                 th:with="chapter=${generalSectionMap.get(section.id)}">
+                                                <div class="template-file-info">
+    <!--                                                <div class="template-file-name">-->
+    <!--                                                    <i class="fas fa-file-word text-warning"></i>-->
+    <!--                                                    <span th:text="${chapter.name}"></span>-->
+    <!--                                                </div>-->
+                                                    <div class="template-actions">
+    <!--                                                    <a th:href="@{/api/files/{chapterId}(chapterId=${chapter.id})}"-->
+    <!--                                                       class="template-action-btn template-download-btn"-->
+    <!--                                                       title="Скачать шаблон">-->
+    <!--                                                        <i class="fas fa-download"></i>-->
+    <!--                                                    </a>-->
+                                                        <a th:href="@{/template/{generalId}/document/{chapterId}(generalId=${general.id}, chapterId=${chapter.id})}"
+                                                           class="template-action-btn template-open-btn"
+                                                           target="_self"
+                                                           title="Открыть шаблон">
+                                                            <i class="fas fa-external-link-alt">Открыть</i>
+                                                        </a>
+                                                        <button type="button"
+                                                                class="template-action-btn template-open-btn"
+                                                                th:onclick="|checkSectionTemplate(${general.id}, ${section.id}, ${chapter.id})|"
+                                                                title="Проверить ссылки {{file.docx}} в шаблоне">
+                                                            <i class="fas fa-check">Проверить</i>
+                                                        </button>
+                                                        <button type="button"
+                                                                class="template-action-btn template-delete-btn"
+                                                                th:onclick="|deleteSectionTemplate(${general.id}, ${section.id}, 'SAMPLE')|"
+                                                                title="Удалить шаблон">
+                                                            <i class="fas fa-trash">🗑️</i>
+                                                        </button>
+                                                    </div>
+    <!--                                                <div class="template-status">-->
+    <!--                                                    <i class="fas fa-check-circle text-success"></i> Шаблон-->
+    <!--                                                </div>-->
+                                                </div>
+                                            </div>
+                                            <div th:unless="${generalSectionMap.get(section.id)}">
+                                                <!-- Если шаблона нет, показываем область загрузки -->
+                                                <div class="template-upload-area"
+                                                     th:onclick="|openFileUpload(${general.id}, ${section.id}, 'SAMPLE')|">
+                                                    <div class="template-upload-icon">
+                                                        <i class="fas fa-cloud-upload-alt"></i>
+                                                    </div>
+                                                    <div class="template-upload-text">
+                                                        Загрузить<br>шаблон
+                                                    </div>
+                                                </div>
+                                                <div class="no-template">
+                                                    <i class="fas fa-times-circle"></i> Нет шаблона
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="chapter, iterStat : ${chapters}">
+                                <td>
+                                    <button type="button" class="template-action-btn template-delete-btn"
+                                            th:onclick="|deleteChapterTemplate(${general.id}, ${chapter.id})|"
+                                            title="Удалить главу">
+                                        <span th:text="${iterStat.count}"></span>
+                                    </button>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-file me-2 text-primary"></i>
+                                        <div>
+                                            <div class="mt-1">
+                                                <a th:href="@{/template/{generalId}/document/{chapterId}(
+                                                    generalId=${general.getId()},
+                                                    chapterId=${chapter.getId()})}"
+                                                   class="file-link">
+                                                    <strong th:text="${chapter.name}"></strong>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td th:each="section : ${sections}">
+                                    <div class="form-check d-flex justify-content-center">
+                                        <input class="form-check-input section-checkbox"
+                                               type="checkbox"
+                                               name="chapterSections"
+                                               th:value="${chapter.id} + '_' + ${section.id}"
+                                               th:checked="${chapterSectionMap.get(chapter.id) != null && chapterSectionMap.get(chapter.id).contains(section.id)}">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <th width="40%">Таблицы для расчетов</th>
+                                <th th:each="section : ${sections}" width="*">
+                                    <div class="section-header-content">
+                                        <div class="section-info">
+                                            <div class="section-name" th:text="${section.name}"></div>
+                                        </div>
+
+                                        <div class="template-area">
+                                            <!-- Блок для шаблона раздела -->
+                                            <div th:if="${generalSectionTableMap.get(section.id)}"
+                                                 th:with="chapter=${generalSectionTableMap.get(section.id)}">
+                                                <div class="template-file-info">
+                                                    <div class="template-actions">
+                                                        <a th:href="@{/template/{generalId}/document/{chapterId}(generalId=${general.id}, chapterId=${chapter.id})}"
+                                                           class="template-action-btn template-open-btn"
+                                                           target="_self"
+                                                           title="Открыть таблицу">
+                                                            <i class="fas fa-external-link-alt">открыть</i>
+                                                        </a>
+                                                        <button type="button"
+                                                                class="template-action-btn template-delete-btn"
+                                                                th:onclick="|deleteSectionTemplate(${general.id}, ${section.id}, 'TABLE')|"
+                                                                title="Удалить таблицу">
+                                                            <i class="fas fa-trash">🗑️</i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div th:unless="${generalSectionTableMap.get(section.id)}">
+                                                <!-- Если шаблона нет, показываем область загрузки -->
+                                                <div class="template-upload-area"
+                                                     th:onclick="|openFileUpload(${general.id}, ${section.id}, 'TABLE')|">
+                                                    <div class="template-upload-icon">
+                                                        <i class="fas fa-cloud-upload-alt"></i>
+                                                    </div>
+                                                    <div class="template-upload-text">
+                                                        Загрузить<br>таблицу
+                                                    </div>
+                                                </div>
+                                                <div class="no-template">
+                                                    <i class="fas fa-times-circle"></i> Нет таблицы
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Кнопка сохранения изменений -->
+                    <div class="mt-3 text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> Сохранить привязки
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Форма загрузки файлов для глав -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-upload"></i> Загрузка файлов глав</h5>
+            </div>
+            <div class="card-body">
+                <div class="upload-form" id="uploadFormContainer">
+                    <div class="form-group">
+                        <div class="file-input-wrapper">
+                            <input type="file"
+                                   id="file"
+                                   name="files"
+                                   multiple
+                                   accept=".doc,.docx,.pdf,.txt,.rtf,.xls,.xlsx">
+                            <div class="file-input-label" id="fileInputLabel">
+                                <i class="fas fa-folder-open"></i> Выберите файл
+                            </div>
+                        </div>
+                        <div class="file-info" id="fileInfo">
+                            <strong>Выбран файл:</strong> <span id="fileName"></span>
+                            <br>
+                            <strong>Размер:</strong> <span id="fileSize"></span>
+                        </div>
+                    </div>
+
+                    <!-- Скрытое поле для generalId -->
+                    <input type="hidden" id="generalId" name="generalId" th:value="${general.id}">
+
+                    <!-- Прогресс-бар -->
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill">0%</div>
+                        </div>
+                        <div class="progress-text" id="progressText">Подготовка к загрузке...</div>
+                    </div>
+
+                    <!-- Кнопка отмены -->
+                    <button type="button" id="cancelBtn" class="btn btn-warning" style="display: none; width: 100%; margin-top: 10px;">
+                        <i class="fas fa-times"></i> Отменить загрузку
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Скрытый input для загрузки файлов -->
+        <input type="file" id="hiddenFileInput" class="template-upload-input"
+               accept=".doc,.docx,.pdf,.txt,.rtf,.xls,.xlsx"
+               onchange="handleTemplateFileSelect(event)">
+
+        <!-- Сообщения об успехе/ошибке -->
+        <div th:if="${param.success}" class="alert alert-success mt-3 alert-dismissible fade show">
+            <i class="fas fa-check-circle"></i> Операция выполнена успешно!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${param.error}" class="alert alert-danger mt-3 alert-dismissible fade show">
+            <i class="fas fa-exclamation-triangle"></i> Ошибка: <span th:text="${param.error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script>
+    // upload.js - для загрузки файлов глав в локальное хранилище
+    let currentXHR = null;
+    let currentUploadData = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('file');
+        const fileInputLabel = document.getElementById('fileInputLabel');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const uploadFormContainer = document.getElementById('uploadFormContainer');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        // 1. Автозагрузка при выборе файла или файлов
+        fileInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+
+            if (files.length > 30) {
+                alert('Можно загрузить не более 30 файлов за раз');
+                fileInput.value = '';
+                return;
+            }
+
+            startBatchUpload(files);
+        });
+
+        // 3. Отображение информации о файле
+        function displayFileInfo(file) {
+            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+            fileName.textContent = file.name;
+            fileSize.textContent = `${sizeInMB} MB`;
+            fileInfo.style.display = 'block';
+            fileInputLabel.textContent = `📁 ${file.name}`;
+            fileInputLabel.style.background = '#d4edda';
+            fileInputLabel.style.borderColor = '#c3e6cb';
+        }
+
+        // 4. Кнопка отмены
+        cancelBtn.addEventListener('click', function() {
+            if (currentXHR) {
+                currentXHR.abort();
+                resetForm();
+                showMessage('Загрузка отменена', 'info');
+            }
+        });
+    });
+
+    // Функция открытия диалога выбора файла для загрузки шаблона
+    function openFileUpload(generalId, sectionId, type) {
+        currentUploadData = {
+            generalId: generalId,
+            sectionId: sectionId,
+            type: type
+        };
+        document.getElementById('hiddenFileInput').click();
+    }
+
+    // Обработка выбора файла для шаблона
+    function handleTemplateFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!currentUploadData) {
+            alert('Ошибка: данные для загрузки не установлены');
+            return;
+        }
+
+        // Проверка размера файла (макс 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Файл слишком большой. Максимальный размер: 10MB');
+            event.target.value = '';
+            return;
+        }
+         uploadTemplateFile(file, currentUploadData);
+        // Сбрасываем input
+        event.target.value = '';
+    }
+
+    // Функция загрузки шаблона для раздела
+    function uploadTemplateFile(file, uploadData) {
+        const { generalId, sectionId, type } = uploadData;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('generalId', generalId);
+        formData.append('sectionId', sectionId);
+        formData.append('type', type);
+
+        // Показываем индикатор загрузки
+        showUploadIndicator(sectionId, true);
+
+        fetch(`/api/files/upload/section-template/${generalId}/${sectionId}`, {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    return response.text().then(text => {
+                        throw new Error(text);
+                    });
+                }
+            })
+            .then(data => {
+                //alert('Шаблон успешно загружен!');
+                location.reload();
+            })
+            .catch(error => {
+                showUploadIndicator(sectionId, false);
+                alert('Ошибка загрузки: ' + error.message);
+            });
+    }
+
+    function startBatchUpload(files) {
+        const generalId = document.getElementById('generalId').value;
+        const progressContainer = document.getElementById('progressContainer');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        progressContainer.style.display = 'block';
+        cancelBtn.style.display = 'block';
+
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+        formData.append('generalId', generalId);
+
+        currentXHR = new XMLHttpRequest();
+
+        currentXHR.upload.onprogress = function (e) {
+            if (e.lengthComputable) {
+                const percent = (e.loaded / e.total) * 100;
+                updateProgress(percent, `Загружено ${Math.round(percent)}%`);
+            }
+        };
+
+        currentXHR.onload = function () {
+            if (currentXHR.status === 200) {
+                updateProgress(100, 'Все файлы загружены');
+                showSuccessNotification();
+            } else {
+                handleError('Ошибка загрузки файлов');
+            }
+        };
+
+        currentXHR.onerror = () => handleError('Ошибка сети');
+        currentXHR.open('POST', '/api/files/upload/templates/batch');
+        currentXHR.send(formData);
+    }
+
+
+    // Показать/скрыть индикатор загрузки
+    function showUploadIndicator(sectionId, isLoading) {
+        // Находим элемент по данным атрибутам
+        const uploadArea = document.querySelector(`[onclick*="${sectionId}"]`);
+        if (uploadArea) {
+            if (isLoading) {
+                uploadArea.innerHTML = '<i class="fas fa-spinner fa-spin"></i><br>Загрузка...';
+                uploadArea.style.pointerEvents = 'none';
+                uploadArea.style.opacity = '0.7';
+            } else {
+                uploadArea.innerHTML = `
+                    <div class="template-upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="template-upload-text">
+                        Загрузить<br>шаблон
+                    </div>
+                `;
+                uploadArea.style.pointerEvents = 'auto';
+                uploadArea.style.opacity = '1';
+            }
+        }
+    }
+
+    // Функция удаления шаблона для раздела
+    function deleteSectionTemplate(generalId, sectionId, type) {
+        if (confirm('Вы уверены, что хотите удалить шаблон для этого раздела?')) {
+            fetch(`/api/files/remove/section-template/${generalId}/${sectionId}/${type}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Шаблон удален!');
+                        location.reload();
+                    } else {
+                        alert('Ошибка удаления шаблона');
+                    }
+                })
+                .catch(error => {
+                    alert('Ошибка сети: ' + error.message);
+                });
+        }
+    }
+    // Функция удаления главы
+    function deleteChapterTemplate(generalId, chapterId) {
+        if (confirm('Вы уверены, что хотите удалить файл для этой главы?')) {
+            fetch(`/api/files/remove/chapter-template/${generalId}/${chapterId}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Глава удалена!');
+                        location.reload();
+                    } else {
+                        alert('Ошибка удаления главы');
+                    }
+                })
+                .catch(error => {
+                    alert('Ошибка сети: ' + error.message);
+                });
+        }
+    }
+
+    // Функция сброса формы
+    function resetForm() {
+        const fileInput = document.getElementById('file');
+        const fileInputLabel = document.getElementById('fileInputLabel');
+        const fileInfo = document.getElementById('fileInfo');
+        const progressContainer = document.getElementById('progressContainer');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        fileInput.value = '';
+        fileInputLabel.textContent = '📁 Выберите файл или перетащите его сюда';
+        fileInputLabel.style.background = '#f8f9fa';
+        fileInputLabel.style.borderColor = '#dee2e6';
+        fileInfo.style.display = 'none';
+        progressContainer.style.display = 'none';
+        cancelBtn.style.display = 'none';
+        currentXHR = null;
+    }
+
+    function updateProgress(percent, text) {
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+
+        progressFill.style.width = percent + '%';
+        progressFill.textContent = Math.round(percent) + '%';
+        progressText.textContent = text;
+
+        if (percent < 30) {
+            progressFill.style.background = 'linear-gradient(90deg, #ff4444, #ff6b6b)';
+        } else if (percent < 70) {
+            progressFill.style.background = 'linear-gradient(90deg, #ffa726, #ffb74d)';
+        } else {
+            progressFill.style.background = 'linear-gradient(90deg, #4CAF50, #45a049)';
+        }
+    }
+
+    function showSuccessNotification() {
+        showCustomAlert('Файл успешно загружен! Страница перезагрузится', 3000);
+        setTimeout(() => {
+            location.reload();
+        }, 3000);
+    }
+
+    function handleError(message) {
+        const progressText = document.getElementById('progressText');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        progressText.textContent = 'Ошибка!';
+        progressText.style.color = 'red';
+        cancelBtn.style.display = 'none';
+
+        setTimeout(() => {
+            resetForm();
+        }, 3000);
+
+        alert(message);
+    }
+
+    function showMessage(message, type) {
+        console.log(`${type}: ${message}`);
+    }
+    function showCustomAlert(message, duration = 3000) {
+        const alertBox = document.getElementById('custom-alert');
+        alertBox.textContent = message;
+        alertBox.classList.add('show');
+
+        // Установка таймера для скрытия уведомления
+        setTimeout(() => {
+            alertBox.classList.remove('show');
+            // Опционально: скрыть элемент полностью после исчезновения анимации
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 500); // Длительность должна совпадать с transition в CSS
+        }, duration);
+    }
+    function checkSectionTemplate(generalId, sectionId, chapterId) {
+        fetch(`/api/template/check/section/${generalId}/${sectionId}/${chapterId}`, {
+            method: 'POST'
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'OK') {
+                    showCustomAlert('✅ Шаблон рабочий: все ссылки найдены', 4000);
+                    return;
+                }
+
+                const missing = (data.missing || []);
+                const msg = '❌ Шаблон НЕ рабочий. Не найдены файлы:\n- ' + missing.join('\n- ');
+                alert(msg);
+            })
+            .catch(err => alert('Ошибка проверки: ' + err.message));
+    }
+</script>
+</body>
+</html>

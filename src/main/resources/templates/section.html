@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проект - Web Portal</title>
+    <style id="psd-theme-inline">
+        :root {
+            --psd-coral: #E27D60;
+            --psd-mint: #85DCB0;
+            --psd-sand: #E8A87C;
+            --psd-mauve: #C38D9E;
+            --psd-teal: #41B3A3;
+            --psd-ink: #25302F;
+            --psd-text: #33413F;
+            --psd-muted: #6D7775;
+            --psd-bg: #F4F2EE;
+            --psd-panel: #FFFFFF;
+            --psd-soft: #FAF8F5;
+            --psd-border: #D9D6CF;
+            --psd-border-strong: #B9B4AA;
+            --psd-radius: 8px;
+            --psd-shadow: 0 6px 18px rgba(37, 48, 47, .08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--psd-bg);
+            color: var(--psd-text);
+        }
+
+        a {
+            color: #277F74;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--psd-coral);
+            text-decoration: underline;
+        }
+
+        .navbar {
+            background: var(--psd-ink);
+            color: #fff;
+            padding: 1rem 2rem;
+            border-bottom: 4px solid var(--psd-teal);
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            font-size: 1.45rem;
+            font-weight: 700;
+            letter-spacing: .02em;
+            white-space: nowrap;
+        }
+
+        .logo::before {
+            content: "";
+            width: 12px;
+            height: 30px;
+            background: var(--psd-teal);
+            display: inline-block;
+        }
+
+        .nav-links,
+        .user-info,
+        .generate-actions,
+        .section-actions,
+        .editor-presence,
+        .sync-health {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a,
+        .logout-btn {
+            background: transparent;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .24);
+            border-radius: 4px;
+            padding: .5rem .85rem;
+            cursor: pointer;
+            font: inherit;
+            text-decoration: none;
+        }
+
+        .nav-links a:hover,
+        .logout-btn:hover {
+            background: #354241;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .header,
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--psd-border);
+        }
+
+        .page-title,
+        .project-title,
+        .section-title,
+        .generate-title {
+            color: var(--psd-ink);
+            font-weight: 700;
+            letter-spacing: .01em;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .project-title {
+            font-size: 1.45rem;
+            margin-bottom: .5rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .project-description,
+        .text-muted,
+        .meta-value,
+        .no-assignments,
+        .empty-state,
+        .generate-description,
+        .stat-label {
+            color: var(--psd-muted);
+            line-height: 1.5;
+        }
+
+        .project-info,
+        .files-section,
+        .assign-form,
+        .add-file-form,
+        .generate-section,
+        .statistics-compact,
+        .section-logs-block {
+            background: var(--psd-panel);
+            border: 1px solid var(--psd-border);
+            border-top: 4px solid var(--psd-teal);
+            border-radius: var(--psd-radius);
+            box-shadow: var(--psd-shadow);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .project-info .project-header {
+            margin-bottom: 1rem;
+        }
+
+        .project-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .meta-item,
+        .section-card,
+        .assigned-users {
+            background: var(--psd-soft);
+            border: 1px solid var(--psd-border);
+            border-radius: var(--psd-radius);
+            padding: 1rem;
+        }
+
+        .meta-item {
+            border-left: 4px solid var(--psd-mint);
+        }
+
+        .meta-label {
+            color: var(--psd-ink);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: .76rem;
+            letter-spacing: .04em;
+            margin-bottom: .4rem;
+        }
+
+        .sections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        .section-card {
+            position: relative;
+            overflow: hidden;
+            transition: border-color .15s ease, box-shadow .15s ease;
+        }
+
+        .section-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background: var(--psd-teal);
+        }
+
+        .section-card:hover {
+            border-color: var(--psd-teal);
+            box-shadow: 0 8px 22px rgba(37, 48, 47, .12);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-name {
+            color: var(--psd-ink);
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .assigned-user {
+            margin-top: .4rem;
+            color: var(--psd-text);
+            font-weight: 600;
+        }
+
+        .assignment-header {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: .4rem;
+        }
+
+        .assignment-form form,
+        .mb-3 form,
+        .d-inline {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn,
+        .btn-primary,
+        .btn-success,
+        .btn-action,
+        .btn-generate,
+        .btn-generate-modern,
+        .btn-primary-modern,
+        .btn-success-modern,
+        button[type="submit"]:not(.logout-btn) {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .45rem;
+            background: var(--psd-teal);
+            color: #fff;
+            border: 1px solid #2F8F80;
+            border-radius: 4px;
+            padding: .6rem 1rem;
+            font: inherit;
+            font-size: .92rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn:hover,
+        .btn-primary:hover,
+        .btn-success:hover,
+        .btn-action:hover,
+        .btn-generate:hover,
+        .btn-generate-modern:hover,
+        .btn-primary-modern:hover,
+        .btn-success-modern:hover,
+        button[type="submit"]:not(.logout-btn):hover {
+            background: #2F8F80;
+            border-color: #28786C;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .btn-secondary,
+        .btn-secondary-modern {
+            background: #EFE8E4;
+            color: var(--psd-ink);
+            border-color: var(--psd-border-strong);
+        }
+
+        .btn-secondary:hover,
+        .btn-secondary-modern:hover {
+            background: #E3DAD5;
+            color: var(--psd-ink);
+        }
+
+        .btn-danger,
+        .btn-process,
+        .btn-delete,
+        span.btn[onclick*="delete"],
+        button[onclick*="Удалить"] {
+            background: var(--psd-coral);
+            border-color: #C7664F;
+            color: #fff;
+        }
+
+        .form-control,
+        .form-control-sm,
+        .status-select,
+        input,
+        select,
+        textarea {
+            width: auto;
+            max-width: 100%;
+            background: #fff;
+            color: var(--psd-ink);
+            border: 1px solid var(--psd-border-strong);
+            border-radius: 4px;
+            padding: .55rem .75rem;
+            font: inherit;
+        }
+
+        input[type="file"].form-control {
+            width: 100%;
+            margin: 1rem 0 .75rem;
+        }
+
+        .form-control:focus,
+        .form-control-sm:focus,
+        .status-select:focus,
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: 2px solid rgba(65, 179, 163, .25);
+            border-color: var(--psd-teal);
+        }
+
+        .badge,
+        .section-badge,
+        .assignment-count,
+        .log-count,
+        .status-generated,
+        .status-ready,
+        .status-ready-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--psd-teal);
+            color: #fff;
+            border: 1px solid #2F8F80;
+            border-radius: 4px;
+            padding: .25rem .55rem;
+            font-size: .82rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .badge {
+            font-size: 1rem;
+        }
+
+        .status-not-generated,
+        .status-cancelled,
+        .status-cancelled-badge {
+            background: var(--psd-coral);
+            border-color: #C7664F;
+            color: #fff;
+        }
+
+        .status-in-work,
+        .status-in-work-badge {
+            background: #F2E4D5;
+            border-color: var(--psd-sand);
+            color: #6D4B20;
+        }
+
+        .table-container {
+            max-height: 1000px;
+            overflow: auto;
+            background: #fff;
+            border: 1px solid var(--psd-border);
+            border-radius: var(--psd-radius);
+        }
+
+        .files-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .files-table th,
+        .files-table td {
+            padding: .85rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--psd-border);
+            vertical-align: middle;
+        }
+
+        .files-table th,
+        .sticky-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: var(--psd-ink);
+            color: #fff;
+            border-bottom: 2px solid var(--psd-teal);
+            font-weight: 700;
+        }
+
+        .files-table tbody tr:hover td {
+            background: #F6FBFA;
+        }
+
+        .file-link {
+            color: #277F74;
+            font-weight: 700;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .alert-success,
+        .alert-error,
+        .toast-message {
+            padding: .85rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 20px rgba(37, 48, 47, .12);
+        }
+
+        .alert-success,
+        .toast-success {
+            background: #E8F6F3;
+            color: #1F5F56;
+            border: 1px solid var(--psd-teal);
+        }
+
+        .alert-error,
+        .toast-error {
+            background: #F9E7E1;
+            color: #8A3D2E;
+            border: 1px solid var(--psd-coral);
+        }
+
+        #toastContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast-message {
+            min-width: 260px;
+            max-width: 420px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity .25s ease, transform .25s ease;
+            pointer-events: auto;
+        }
+
+        .toast-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .statistics-compact {
+            padding: .75rem 1rem;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+            padding: .5rem 1rem;
+        }
+
+        .stat-number {
+            color: var(--psd-ink);
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        .lamp,
+        .editor-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff;
+            color: var(--psd-ink);
+            border: 1px solid var(--psd-border-strong);
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .lamp .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .18);
+        }
+
+        .lamp.ok .dot { background: var(--psd-teal); }
+        .lamp.warn .dot { background: var(--psd-sand); }
+        .lamp.err .dot { background: var(--psd-coral); }
+        .lamp.none .dot { background: #9CA3AF; }
+        .lamp .label { font-weight: 700; }
+        .lamp .meta { opacity: .72; font-variant-numeric: tabular-nums; }
+
+        .sync-pop,
+        .editor-pop {
+            position: fixed;
+            z-index: 9999;
+            display: none;
+            max-width: 420px;
+            background: #fff;
+            border: 1px solid var(--psd-border-strong);
+            border-radius: var(--psd-radius);
+            box-shadow: 0 10px 28px rgba(37, 48, 47, .16);
+            padding: 12px;
+        }
+
+        .sync-pop h6,
+        .editor-pop h6 {
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: var(--psd-ink);
+        }
+
+        .sync-pop .row {
+            display: flex;
+            gap: 10px;
+            margin: 6px 0;
+            font-size: 12px;
+        }
+
+        .sync-pop .k {
+            width: 140px;
+            opacity: .72;
+        }
+
+        .sync-pop ul,
+        .editor-pop ul {
+            margin: 6px 0 0 18px;
+            padding: 0;
+            font-size: 12px;
+        }
+
+        .sync-pop .small,
+        .editor-pop .small {
+            margin-top: 8px;
+            font-size: 11px;
+            opacity: .75;
+        }
+
+        .section-logs-block {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .section-logs-block summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 14px 18px;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--psd-ink);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--psd-soft);
+            border-bottom: 1px solid var(--psd-border);
+        }
+
+        .section-logs-block summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .section-logs-list {
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .section-log-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 34px;
+            padding: 6px 10px;
+            border-left: 4px solid var(--psd-teal);
+            border-radius: 4px;
+            background: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            font-size: 13px;
+        }
+
+        .log-time { flex: 0 0 130px; color: var(--psd-muted); }
+        .log-user { flex: 0 0 140px; font-weight: 700; color: var(--psd-ink); overflow: hidden; text-overflow: ellipsis; }
+        .log-action { flex: 0 0 110px; font-weight: 800; color: var(--psd-text); }
+        .log-file { flex: 1 1 320px; min-width: 120px; overflow: hidden; text-overflow: ellipsis; color: var(--psd-ink); font-weight: 700; }
+        .log-details { flex: 1 1 280px; min-width: 120px; overflow: hidden; text-overflow: ellipsis; color: var(--psd-muted); }
+        .section-logs-empty { padding: 14px 18px 18px; color: var(--psd-muted); font-size: 14px; }
+        .log-delete { border-left-color: var(--psd-coral); }
+        .log-status { border-left-color: var(--psd-sand); }
+        .log-restore { border-left-color: var(--psd-mauve); }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(65, 179, 163, .3);
+            border-radius: 50%;
+            border-top-color: var(--psd-teal);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .navbar { padding: .75rem 1rem; }
+            .nav-container,
+            .header,
+            .project-header { flex-direction: column; align-items: stretch; }
+            .nav-links { gap: .5rem; }
+            .container { margin: 1rem auto; padding: 0 1rem; }
+            .sections-grid { grid-template-columns: 1fr; }
+            .section-actions,
+            .generate-actions { flex-direction: column; align-items: stretch; }
+            .btn,
+            .btn-action,
+            .btn-generate-modern { width: 100%; }
+        }
+
+
+        .pipeline-section {
+            background: var(--psd-panel);
+            border: 1px solid var(--psd-border);
+            border-top: 4px solid var(--psd-sand);
+            border-radius: var(--psd-radius);
+            box-shadow: var(--psd-shadow);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .pipeline-section .section-title {
+            margin-bottom: 1rem;
+        }
+
+        .pipeline-caption {
+            margin: -.35rem 0 1rem;
+            color: var(--psd-muted);
+            font-size: .95rem;
+        }
+
+        .pipeline-table-wrap {
+            overflow-x: auto;
+        }
+
+        .pipeline-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 760px;
+        }
+
+        .pipeline-table th,
+        .pipeline-table td {
+            padding: 1rem;
+            border: 1px solid var(--psd-border);
+            vertical-align: middle;
+        }
+
+        .pipeline-table th {
+            width: 170px;
+            background: var(--psd-soft);
+            color: var(--psd-ink);
+            font-weight: 700;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .pipeline-table td.value-cell {
+            background: #fff;
+            font-weight: 600;
+            min-width: 220px;
+        }
+
+        .pipeline-table td.action-cell {
+            width: 230px;
+            text-align: center;
+            background: #fff;
+        }
+
+        .btn-upload-tkr {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 58px;
+            padding: 0 1.4rem;
+            border: 2px solid var(--psd-ink);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--psd-ink);
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn-upload-tkr:hover {
+            background: var(--psd-soft);
+            text-decoration: none;
+            color: var(--psd-ink);
+        }
+
+        @media (max-width: 900px) {
+            .pipeline-table {
+                min-width: 100%;
+            }
+
+            .pipeline-table,
+            .pipeline-table tbody,
+            .pipeline-table tr,
+            .pipeline-table th,
+            .pipeline-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .pipeline-table tr {
+                margin-bottom: 1rem;
+            }
+
+            .pipeline-table th,
+            .pipeline-table td {
+                border-bottom: none;
+            }
+
+            .pipeline-table tr > *:last-child {
+                border-bottom: 1px solid var(--psd-border);
+            }
+
+            .pipeline-table td.action-cell {
+                text-align: left;
+            }
+
+            .btn-upload-tkr {
+                width: 100%;
+                border-radius: var(--psd-radius);
+            }
+        }
+
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<div id="toastContainer"></div>
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">Конструктор ПД</div>
+        <div class="nav-links">
+            <a th:href="@{/projects/{id}/documents (id=${project.id})}" class="btn-secondary">← Назад</a>
+            <a th:href="@{/projects}">📋 Проекты</a>
+            <a sec:authorize="hasAnyRole('ADMIN')" th:href="@{/admin}" >⚙ Панель администратора </a>
+            <div class="user-info">
+                <!--                <span th:text="${user.name}">Пользователь</span>-->
+                <!--                <div class="user-avatar">-->
+                <!--                    <span>U</span>-->
+                <!--                </div>-->
+                <form th:action="@{/logout}" method="post" style="display: inline;"
+                      onsubmit="localStorage.removeItem('onlyoffice-editor-open');">
+                    <button type="submit" class="logout-btn">Сбросить сеансы</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container">
+    <div id="flashData"
+         th:attr="data-success=${success}, data-error=${error}"
+         style="display:none;">
+    </div>
+    <!-- Header -->
+    <div class="project-header">
+        <div>
+            <h2 class="project-title" th:text="${project.name}">Разработка новой системы документооборота</h2>
+            <p class="project-description" th:text="${project.getDescription()}">
+                Создание современной системы управления документами с интеграцией Яндекс.Диск
+                и автоматизированной сборкой документов из шаблонов.
+            </p>
+        </div>
+        <div class="project-status">
+            <h2 class="badge" th:if="${project.getGeneral() != null}" th:text="${project.getGeneral().getName()}"></h2>
+            <!--                <span class="status-badge status-active">Активен</span>-->
+        </div>
+    </div>
+
+    <!-- Generate Report Section -->
+    <div class="generate-actions">
+
+        <button type="button"
+                class="btn-generate-modern btn-primary-modern">
+            <!--                onclick="generateReport()"-->
+            <!--                th:data-project-id="${project.id}"-->
+            <!--                th:data-section-id="${section.id}"-->
+            <!--                id="generateReportBtn">-->
+            <span class="icon">⚡</span>
+            Обновить данные
+        </button>
+
+        <!--        <button type="button"-->
+        <!--                class="btn-generate-modern btn-primary-modern"-->
+        <!--                onclick="generateReportGip()"-->
+        <!--                th:data-project-id="${project.id}"-->
+        <!--                th:data-section-id="${section.id}"-->
+        <!--                id="generateReportBtnGip">-->
+        <!--            <span class="icon">👮‍♂</span>-->
+        <!--            Сформировать раздел для ГИП-->
+        <!--        </button>-->
+
+        <a class="btn-generate-modern btn-secondary-modern">
+            <!--           th:href="@{/project/{projectId}/{sectionId}/build(projectId=${project.id}, sectionId=${section.id})}">-->
+            <span class="icon">📋</span>
+            Статус обновлений
+        </a>
+
+        <a class="btn-generate-modern btn-secondary-modern">
+            <!--           th:href="@{/api/files/{chapterId}(chapterId= ${resultChapter.getId()})}">-->
+            <span class="icon">📄</span>
+            Скачать актуальный документ
+        </a>
+
+        <a
+                class="btn-generate-modern btn-success-modern"
+                th:href="@{/project/{projectId}/{sectionId}/attachments/bundle.zip(projectId=${project.id}, sectionId=${section.id})}">
+            <span class="icon">📦</span>
+            Скачать комплект (ZIP)
+        </a>
+
+    </div>
+    <div id="generateStatus" style="margin-top: 1rem; display: none;">
+        <div id="loadingMessage" style="display: none; color: #3498db;">
+            <div class="loading-spinner" style="display: inline-block; margin-right: 8px;"></div>
+            Идет генерация отчета...
+        </div>
+        <div id="successMessage" style="display: none; color: #27ae60;">
+            ✅ Отчет успешно сгенерирован!
+        </div>
+        <div id="errorMessage" style="display: none; color: #e74c3c;">
+            ❌ Ошибка при генерации отчета
+        </div>
+    </div>
+
+    <!-- Project Information -->
+    <div class="project-info">
+        <div class="project-header">
+            <div>
+                <h2 class="project-title" th:text="'Раздел: ' + ${section.name}">
+                    Разработка новой системы документооборота
+                </h2>
+            </div>
+            <div>
+                <div class="project-title">
+                    <!--                <a th:if="${user.role != T(com.psd.enums.UserRole).CONTRACTOR and sampleChapter != null and sampleChapter.id != null}"-->
+                    <!--                   class="btn btn-primary"-->
+                    <!--                   th:href="@{/api/files/download/{chapterId}(chapterId=${sampleChapter.id})}">-->
+                    <!--                    Шаблон раздела-->
+                    <!--                </a>-->
+
+                    <a th:if="${stampChapter != null and stampChapter.id != null}"
+                       class="btn btn-primary"
+                       data-bs-toggle="modal"
+                       data-bs-target="#addGeneralModal"
+                       th:href="@{/project/{projectId}/{sectionId}/document/{chapterId}(
+                        projectId=${project.id},
+                        sectionId=${section.id},
+                        chapterId=${stampChapter.id})}">
+                        Штамп
+                    </a>
+
+                    <a th:if="${tableChapter != null and tableChapter.id != null}"
+                       class="btn btn-primary"
+                       data-bs-toggle="modal"
+                       data-bs-target="#addGeneralModal"
+                       th:href="@{/project/{projectId}/{sectionId}/document/{chapterId}(
+                        projectId=${project.id},
+                        sectionId=${section.id},
+                        chapterId=${tableChapter.id})}">
+                        Таблицы
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pipeline Static Information -->
+    <div class="pipeline-section">
+        <h3 class="section-title">📐 Параметры трубопровода</h3>
+        <p class="pipeline-caption">Данные, загруженные из КГИС</p>
+        <div class="pipeline-table-wrap">
+            <table class="pipeline-table">
+                <tbody>
+                <tr>
+                    <th>Наименование</th>
+                    <td class="value-cell">Трубопровод</td>
+                    <th>Температура</th>
+                    <td class="value-cell">20</td>
+                    <td class="action-cell" rowspan="2">
+                        <button type="button" class="btn-upload-tkr">Загрузите ТКР</button>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Давление</th>
+                    <td class="value-cell">6,3 МПа</td>
+                    <th>Протяженность</th>
+                    <td class="value-cell">—</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Files List -->
+    <div class="files-section">
+        <h3 class="section-title">📄 Файлы проекта</h3>
+        <div th:if="${documentDtoList.size() > 0}" class="table-container">
+            <table class="files-table sticky-table">
+                <thead>
+                <tr>
+                    <th>№</th>
+                    <th width="50%">Название главы</th>
+                    <th> </th>
+                    <th>Дата изменения</th>
+                    <th>Работали</th>
+                    <th sec:authorize="hasAnyRole('ADMIN','GIP')">Восстановить</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="documentDto, iterStat: ${documentDtoList}" th:attr="data-chapter-id=${documentDto.getId()}">
+                    <td><span th:text="${iterStat.count}"></span></td>
+                    <td>
+                        <a th:href="@{/project/{projectId}/{sectionId}/document/{chapterId}(
+                projectId=${project.id},
+                sectionId=${section.id},
+                chapterId=${documentDto.getId()})}"
+                           target="_self" class="file-link"><p th:text="${documentDto.getName()}"></p>
+                        </a>
+                    </td>
+                    <td><span class="editor-presence" th:attr="data-chapter-id=${documentDto.getId()}"></span>
+                        <span class="sync-health" th:attr="data-chapter-id=${documentDto.getId()}"></span></td>
+
+                    <td th:text="${documentDto.getModified()}">20.12.2023 14:30</td>
+                    <td>
+                        <!--                        <span th:with="stat=${chapterWorkStats[documentDto.id]}"-->
+                        <!--                              th:text="${stat != null ? stat.humanTotal : '0 мин'}">0 мин</span>-->
+                        <!--                        <small th:with="stat=${chapterWorkStats[documentDto.id]}"-->
+                        <!--                               th:if="${stat != null}"-->
+                        <!--                               th:text="${' (' + stat.openCount + ' откр.)'}">-->
+                        <!--                            (0 откр.)-->
+                        <!--                        </small>-->
+                    </td>
+                    <td sec:authorize="hasAnyRole('ADMIN','GIP')">
+                        <form th:action="@{/project/{projectId}/{sectionId}/chapter/{chapterId}/restore(
+                                            projectId=${project.id},
+                                            sectionId=${section.id},
+                                            chapterId=${documentDto.getId()}
+                                         )}"
+                              method="post"
+                              style="display:inline;"
+                              onsubmit="return confirm('Текущий файл главы будет заменён версией из генерального проекта. Продолжить?');">
+                            <button type="submit" class="action-btn btn-edit">
+                                Восстановить
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:if="${documentDtoList.size() == 0}">
+            <h3>📁 Файлов пока нет</h3>
+            <p>Добавьте первый файл в проект</p>
+        </div>
+    </div>
+    <!-- Attachments List -->
+    <div class="files-section" style="margin-top: 24px;">
+        <h3 class="section-title">📎 Приложения к разделу</h3>
+
+        <div class="table-container">
+            <table class="files-table sticky-table">
+                <thead>
+                <tr>
+                    <th>№</th>
+                    <th width="60%">Файл</th>
+                    <th>Размер</th>
+                    <th>Загружен</th>
+                    <th>Действие</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                <tr >
+                    <td><span></span></td>
+
+                    <!-- Пока просто текстом. На шаге 2 сделаем ссылку download -->
+                    <td>
+                        <a
+                                class="file-link">
+                            <p >Приложение 1</p>
+                        </a>
+                    </td>
+
+                    <td>10 KB</td>
+                    <td>20.12.2023 14:30</td>
+                    <td>
+                        <form
+                                method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Удалить файл?');">
+                                <i class="fas fa-trash">Удалить</i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:if="${attachments == null or attachments.size() == 0}">
+            <h3>📎 Приложений пока нет</h3>
+            <p>Здесь будут дополнительные файлы: docx, xlsx, dwg, pdf</p>
+        </div>
+    </div>
+    <div class="mb-3">
+        <form th:action="@{/project/{projectId}/{sectionId}/attachments/upload(projectId=${project.id}, sectionId=${section.id})}"
+              method="post" enctype="multipart/form-data">
+            <input class="form-control" type="file" name="file" accept=".docx,.xlsx,.pdf,.dwg" required>
+            <button type="submit" class="btn btn-primary mt-2">
+                <i class="fas fa-upload"></i> Добавить приложение
+            </button>
+        </form>
+    </div>
+    <div class="section-logs-block">
+        <details>
+            <summary>
+                Логи раздела
+                <span class="log-count" th:text="${sectionLogs != null ? #lists.size(sectionLogs) : 0}">0</span>
+            </summary>
+
+            <!--            <div class="section-logs-list" th:if="${sectionLogs != null and !sectionLogs.isEmpty()}">-->
+            <!--                <div th:each="log : ${sectionLogs}"-->
+            <!--                     class="section-log-row"-->
+            <!--                     th:classappend="${log.actionType.name() == 'OPEN_CHAPTER'} ? ' log-open' :-->
+            <!--                                     (${log.actionType.name() == 'SAVE_CHAPTER'} ? ' log-save' :-->
+            <!--                                     (${log.actionType.name() == 'RESTORE_CHAPTER'} ? ' log-restore' :-->
+            <!--                                     (${log.actionType.name() == 'DELETE_CHAPTER'} ? ' log-delete' :-->
+            <!--                                     (${log.actionType.name() == 'CLOSE_CHAPTER'} ? ' log-close' :-->
+            <!--                                     (${log.actionType.name() == 'STATUS_CHANGED'} ? ' log-status' : '')))))">-->
+
+            <!--                    <span class="log-time"-->
+            <!--                          th:text="${#temporals.format(log.createdAt, 'dd.MM.yyyy HH:mm')}">16.03.2026 14:30</span>-->
+
+            <!--                    <span class="log-user"-->
+            <!--                          th:text="${log.userName}">Иванов</span>-->
+
+            <!--                    <span class="log-action"-->
+            <!--                          th:text="${log.actionType.name() == 'OPEN_CHAPTER'} ? 'Открытие' :-->
+            <!--                                   (${log.actionType.name() == 'SAVE_CHAPTER'} ? 'Сохранение' :-->
+            <!--                                   (${log.actionType.name() == 'RESTORE_CHAPTER'} ? 'Восстановление' :-->
+            <!--                                   (${log.actionType.name() == 'DELETE_CHAPTER'} ? 'Удаление' :-->
+            <!--                                   (${log.actionType.name() == 'CLOSE_CHAPTER'} ? 'Закрытие' :-->
+            <!--                                   (${log.actionType.name() == 'STATUS_CHANGED'} ? 'Статус' : log.actionType)))))">-->
+            <!--                        Открытие-->
+            <!--                    </span>-->
+
+            <!--                    <span class="log-file"-->
+            <!--                          th:if="${log.fileName != null and !#strings.isEmpty(log.fileName)}"-->
+            <!--                          th:text="${log.fileName}">-->
+            <!--                        Пояснительная записка.docx-->
+            <!--                    </span>-->
+
+            <!--                    <span class="log-details"-->
+            <!--                          th:if="${log.details != null and !#strings.isEmpty(log.details)}"-->
+            <!--                          th:text="${log.details}">-->
+            <!--                        Открыта глава-->
+            <!--                    </span>-->
+            <!--                    <span class="log-context"-->
+            <!--                          th:text="${'из раздела: ' + log.contextSectionName}">-->
+            <!--                        из раздела: АР-->
+            <!--                    </span>-->
+            <!--                </div>-->
+            <!--            </div>-->
+
+            <!--            <div class="section-logs-empty" th:if="${sectionLogs == null or sectionLogs.isEmpty()}">-->
+            <!--                Записей пока нет-->
+            <!--            </div>-->
+        </details>
+    </div>
+
+</div>
+</body>
+<script>
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.setAttribute('data-prev-value', select.value);
+    });
+    // Функция для генерации отчета
+    function generateReport() {
+        const btn = document.getElementById('generateReportBtn');
+        const projectId = btn.getAttribute('data-project-id');
+        const sectionId = btn.getAttribute('data-section-id');
+        const statusDiv = document.getElementById('generateStatus');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Показываем индикатор загрузки
+        btn.disabled = true;
+        statusDiv.style.display = 'block';
+        loadingMessage.style.display = 'block';
+        successMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+
+        // Создаем форму для отправки POST запроса
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/project/${projectId}/${sectionId}/generate`;
+
+        // Добавляем CSRF токен
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') ||
+            document.querySelector('input[name="_csrf"]')?.value;
+
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_csrf';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+        }
+
+        // Добавляем форму в документ и отправляем
+        document.body.appendChild(form);
+        form.submit();
+
+        // После отправки формы произойдет редирект на ту же страницу
+        // с flash атрибутами
+    }
+    // Функция для генерации отчета ГИП
+    function generateReportGip() {
+        const btn = document.getElementById('generateReportBtn');
+        const projectId = btn.getAttribute('data-project-id');
+        const sectionId = btn.getAttribute('data-section-id');
+        const statusDiv = document.getElementById('generateStatus');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Показываем индикатор загрузки
+        btn.disabled = true;
+        statusDiv.style.display = 'block';
+        loadingMessage.style.display = 'block';
+        successMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+
+        // Создаем форму для отправки POST запроса
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/project/${projectId}/${sectionId}/generategip`;
+
+        // Добавляем CSRF токен
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') ||
+            document.querySelector('input[name="_csrf"]')?.value;
+
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_csrf';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+        }
+
+        // Добавляем форму в документ и отправляем
+        document.body.appendChild(form);
+        form.submit();
+
+        // После отправки формы произойдет редирект на ту же страницу
+        // с flash атрибутами
+    }
+
+    // Существующие функции остаются без изменений...
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const flashData = document.getElementById('flashData');
+
+        calculateStatistics();
+
+        // Сообщения из query params
+        if (urlParams.has('success')) {
+            showMessage(urlParams.get('success'), 'success');
+        }
+
+        if (urlParams.has('error')) {
+            showMessage(urlParams.get('error'), 'error');
+        }
+
+        // Flash-сообщения из model
+        if (flashData) {
+            const success = flashData.getAttribute('data-success');
+            const error = flashData.getAttribute('data-error');
+
+            if (success && success !== 'null' && success.trim() !== '') {
+                showMessage(success, 'success');
+            }
+
+            if (error && error !== 'null' && error.trim() !== '') {
+                showMessage(error, 'error');
+            }
+        }
+    });
+    ////////////////////
+    let chapterHealthMap = new Map();
+
+    function isAllowedHealthStatus(status) {
+        const s = String(status || '').toUpperCase();
+        return s === 'OK' || s === 'NONE';
+    }
+
+    function isChapterReadyAllowed(chapterId) {
+        const dto = chapterHealthMap.get(String(chapterId));
+        if (!dto) return false;
+
+        const incAllowed = isAllowedHealthStatus(dto.includes?.status);
+        const fragAllowed = isAllowedHealthStatus(dto.fragments?.status);
+
+        return incAllowed && fragAllowed;
+    }
+
+    function getReadyBlockReason(chapterId) {
+        const dto = chapterHealthMap.get(String(chapterId));
+        if (!dto) {
+            return 'Нельзя поставить "Готово": статус INCL/FRAG ещё не загружен.';
+        }
+
+        const problems = [];
+
+        if (!isAllowedHealthStatus(dto.includes?.status)) {
+            problems.push('INCL не зелёный и не серый');
+        }
+
+        if (!isAllowedHealthStatus(dto.fragments?.status)) {
+            problems.push('FRAG не зелёный и не серый');
+        }
+
+        return problems.length
+            ? `Нельзя поставить "Готово": ${problems.join(' и ')}.`
+            : '';
+    }
+    //////////////////
+    // Функция для обновления статуса главы
+    function updateStatus(selectElement) {
+        const projectId = selectElement.getAttribute('data-project-id');
+        const sectionId = selectElement.getAttribute('data-section-id');
+        const chapterId = selectElement.getAttribute('data-chapter-id');
+        const newStatus = selectElement.value;
+
+        if (newStatus === '1' && !isChapterReadyAllowed(chapterId)) {
+            showMessage(getReadyBlockReason(chapterId), 'error');
+
+            // откат к предыдущему статусу
+            const prev = selectElement.getAttribute('data-prev-value') ?? '0';
+            selectElement.value = prev;
+            updateStatusClass(selectElement, prev);
+            return;
+        }
+
+        const previousValue = selectElement.getAttribute('data-prev-value') ?? selectElement.value;
+
+        selectElement.disabled = true;
+        selectElement.style.opacity = '0.7';
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') ||
+            document.querySelector('input[name="_csrf"]')?.value;
+
+        fetch(`/project/${projectId}/${sectionId}/status/${chapterId}?status=${newStatus}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: csrfToken ? `_csrf=${csrfToken}` : ''
+        })
+            .then(response => {
+                if (response.ok) {
+                    updateStatusClass(selectElement, newStatus);
+                    selectElement.setAttribute('data-prev-value', newStatus);
+                    calculateStatistics();
+                    showMessage('Статус успешно обновлен!', 'success');
+                } else {
+                    selectElement.value = previousValue;
+                    updateStatusClass(selectElement, previousValue);
+                    showMessage('Ошибка при обновлении статуса', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                selectElement.value = previousValue;
+                updateStatusClass(selectElement, previousValue);
+                showMessage('Ошибка сети', 'error');
+            })
+            .finally(() => {
+                setTimeout(() => {
+                    selectElement.disabled = false;
+                    selectElement.style.opacity = '1';
+                }, 500);
+            });
+    }
+
+    // Функция для обновления CSS класса в зависимости от статуса
+    function updateStatusClass(selectElement, status) {
+        // Удаляем все статусные классы
+        selectElement.classList.remove('status-in-work', 'status-ready', 'status-cancelled');
+
+        // Добавляем соответствующий класс
+        switch(status) {
+            case '0':
+                selectElement.classList.add('status-in-work');
+                break;
+            case '1':
+                selectElement.classList.add('status-ready');
+                break;
+            case '2':
+                selectElement.classList.add('status-cancelled');
+                break;
+        }
+    }
+
+    function showMessage(message, type) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        let text = message || '';
+        try {
+            text = decodeURIComponent(String(text).replace(/\+/g, ' '));
+        } catch (e) {
+            text = String(message);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = 'toast-message ' + (type === 'success' ? 'toast-success' : 'toast-error');
+        toast.textContent = text;
+
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => {
+            toast.classList.add('show');
+        });
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 250);
+        }, 2500);
+    }
+    // Функция для подсчета статистики
+    function calculateStatistics() {
+        const statusSelects = document.querySelectorAll('.status-select');
+        let inWorkCount = 0;
+        let readyCount = 0;
+        let cancelledCount = 0;
+        let totalCount = statusSelects.length;
+
+        statusSelects.forEach(select => {
+            switch(select.value) {
+                case '0':
+                    inWorkCount++;
+                    break;
+                case '1':
+                    readyCount++;
+                    break;
+                case '2':
+                    cancelledCount++;
+                    break;
+            }
+        });
+
+        // Обновляем счетчики
+        document.getElementById('inWorkCount').textContent = inWorkCount;
+        document.getElementById('readyCount').textContent = readyCount;
+        document.getElementById('cancelledCount').textContent = cancelledCount;
+        document.getElementById('totalCount').textContent = totalCount;
+
+        return { inWorkCount, readyCount, cancelledCount, totalCount };
+    }
+
+    function showSectionInfo(sectionId) {
+        alert(`Информация о разделе ID: ${sectionId}\nЗдесь можно показать детальную информацию о разделе.`);
+    }
+</script>
+<script>
+    (function () {
+        function fmtInstant(iso) {
+            if (!iso) return "—";
+            try {
+                const d = new Date(iso);
+                const pad = (n) => String(n).padStart(2, "0");
+                return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            } catch (e) {
+                return iso;
+            }
+        }
+
+        function statusToClass(status) {
+            switch ((status || "").toUpperCase()) {
+                case "OK": return "ok";
+                case "WARN": return "warn";
+                case "ERROR": return "err";
+                case "NONE": return "none";
+                default: return "none";
+            }
+        }
+
+        function escapeHtml(s) {
+            return (s || "").replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        function lampHtml(kind, lamp) {
+            const cls = statusToClass(lamp?.status);
+            const label = kind === "includes" ? "INCL" : "FRAG";
+            const meta = (lamp?.status || "").toUpperCase() === "NONE" ? "" : `${lamp?.ok ?? 0}/${lamp?.total ?? 0}`;
+            const title = (lamp?.reasons && lamp.reasons.length) ? lamp.reasons.join("\n") : "";
+            return `<span class="lamp ${cls}" data-kind="${kind}" title="${escapeHtml(title)}">
+              <span class="dot"></span>
+              <span class="label">${label}</span>
+              <span class="meta">${meta}</span>
+            </span>`;
+        }
+
+        // Popover
+        const pop = document.createElement("div");
+        pop.className = "sync-pop";
+        document.body.appendChild(pop);
+
+        function hidePop() { pop.style.display = "none"; }
+        document.addEventListener("click", (e) => {
+            if (!pop.contains(e.target) && !e.target.closest(".lamp")) hidePop();
+        });
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") hidePop();
+        });
+
+        function showPop(anchor, dto) {
+            const inc = dto.includes || {};
+            const fr = dto.fragments || {};
+            const lr = dto.lastRuns || {};
+
+            const reasonsInc = (inc.reasons || []).map(r => `<li>${escapeHtml(r)}</li>`).join("");
+            const reasonsFr = (fr.reasons || []).map(r => `<li>${escapeHtml(r)}</li>`).join("");
+
+            pop.innerHTML = `
+      <h6>${escapeHtml(dto.chapterName || ("Глава " + dto.chapterId))}</h6>
+
+      <div class="row"><div class="k">INCLUDES</div>
+        <div>${escapeHtml(inc.status || "—")} · total ${inc.total ?? 0} · ok ${inc.ok ?? 0} · warn ${inc.warn ?? 0} · err ${inc.error ?? 0}</div>
+      </div>
+      ${reasonsInc ? `<ul>${reasonsInc}</ul>` : ""}
+
+      <div class="row" style="margin-top:10px;"><div class="k">FRAGMENTS</div>
+        <div>${escapeHtml(fr.status || "—")} · total ${fr.total ?? 0} · ok ${fr.ok ?? 0} · warn ${fr.warn ?? 0} · err ${fr.error ?? 0}</div>
+      </div>
+      ${reasonsFr ? `<ul>${reasonsFr}</ul>` : ""}
+
+      <div class="small">
+        Последний scan: ${fmtInstant(lr.scanIncludesAt)}<br/>
+        Последний reindex: ${fmtInstant(lr.reindexFragmentsAt)}<br/>
+        Последний materialize: ${fmtInstant(lr.materializeIncludesAt)}
+      </div>
+    `;
+
+            const rect = anchor.getBoundingClientRect();
+            const x = Math.min(rect.left, window.innerWidth - 440);
+            const y = rect.bottom + 8;
+
+            pop.style.left = `${Math.max(8, x)}px`;
+            pop.style.top = `${Math.max(8, y)}px`;
+            pop.style.display = "block";
+        }
+
+        async function loadHealth() {
+            // projectId/sectionId берём из thymeleaf прямо в HTML (самый надёжный вариант)
+            const projectId = document.querySelector('[data-project-id]')?.getAttribute('data-project-id') || '[[${project.id}]]';
+            const sectionId = document.querySelector('[data-section-id]')?.getAttribute('data-section-id') || '[[${section.id}]]';
+
+            // thymeleaf inline может не быть включен, поэтому fallback на DOM attrs (кнопка generateReportBtn точно есть)
+            const btn = document.getElementById('generateReportBtn');
+            const pid = (btn && btn.getAttribute('data-project-id')) ? btn.getAttribute('data-project-id') : projectId;
+            const sid = (btn && btn.getAttribute('data-section-id')) ? btn.getAttribute('data-section-id') : sectionId;
+
+            const url = `/api/projects/${pid}/sections/${sid}/sync-health`;
+
+            let data;
+            try {
+                const resp = await fetch(url, { headers: { "Accept": "application/json" } });
+                if (!resp.ok) throw new Error("HTTP " + resp.status);
+                data = await resp.json();
+            } catch (e) {
+                console.warn("sync-health fetch failed:", e);
+                return;
+            }
+
+            const byId = new Map((data || []).map(x => [String(x.chapterId), x]));
+            chapterHealthMap = byId;
+            const boxes = document.querySelectorAll(".sync-health[data-chapter-id]");
+
+            boxes.forEach(box => {
+                const chapterId = box.getAttribute("data-chapter-id");
+                const dto = byId.get(String(chapterId));
+                if (!dto) return;
+
+                box.innerHTML =
+                    `<span title="Обновить страницу"
+                           onclick="location.reload()"
+                           style="cursor:pointer; margin-right:8px; font-size:18px; user-select:none; vertical-align:middle;">
+                        ⟳
+                     </span>`
+                    + lampHtml("includes", dto.includes)
+                    + lampHtml("fragments", dto.fragments);
+
+                box.querySelectorAll(".lamp").forEach(l => {
+                    l.addEventListener("click", (ev) => {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        showPop(l, dto);
+                    });
+                });
+            });
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", loadHealth);
+        } else {
+            loadHealth();
+        }
+    })();
+</script>
+<script>
+    (function () {
+        function fmtInstant(iso) {
+            if (!iso) return "—";
+            try {
+                const d = new Date(iso);
+                const pad = (n) => String(n).padStart(2, "0");
+                return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            } catch (e) {
+                return iso;
+            }
+        }
+
+        function escapeHtml(s) {
+            return (s || "").replace(/[&<>"']/g, (c) => (
+                {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+            ));
+        }
+
+        const pop = document.createElement("div");
+        pop.className = "editor-pop";
+        document.body.appendChild(pop);
+
+        function hidePop() {
+            pop.style.display = "none";
+        }
+
+        document.addEventListener("click", (e) => {
+            if (!pop.contains(e.target) && !e.target.closest(".editor-badge")) {
+                hidePop();
+            }
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") hidePop();
+        });
+
+        function showPop(anchor, chapterName, sessions) {
+            const items = sessions.map(s => `
+            <li>
+                <strong>${escapeHtml(s.username)}</strong><br>
+                <span class="small">Открыто: ${fmtInstant(s.openedAt)} · Активность: ${fmtInstant(s.lastHeartbeatAt)}</span>
+            </li>
+        `).join("");
+
+            pop.innerHTML = `
+            <h6>${escapeHtml(chapterName || "Открытые редакторы")}</h6>
+            <ul>${items}</ul>
+        `;
+
+            const rect = anchor.getBoundingClientRect();
+            const x = Math.min(rect.left, window.innerWidth - 340);
+            const y = rect.bottom + 8;
+
+            pop.style.left = `${Math.max(8, x)}px`;
+            pop.style.top = `${Math.max(8, y)}px`;
+            pop.style.display = "block";
+        }
+
+        async function loadEditors() {
+            let data;
+            try {
+                const resp = await fetch('/api/onlyoffice/sessions/active', {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                data = await resp.json();
+            } catch (e) {
+                console.warn('active sessions fetch failed:', e);
+                return;
+            }
+
+            const grouped = new Map();
+            (data || []).forEach(item => {
+                const key = String(item.chapterId);
+                if (!grouped.has(key)) grouped.set(key, []);
+                grouped.get(key).push(item);
+            });
+
+            document.querySelectorAll('.editor-presence[data-chapter-id]').forEach(box => {
+                const chapterId = box.getAttribute('data-chapter-id');
+                const sessions = grouped.get(String(chapterId)) || [];
+
+                if (!sessions.length) {
+                    box.innerHTML = '';
+                    return;
+                }
+
+                const chapterName = box.closest('tr')?.querySelector('.file-link p')?.textContent?.trim() || 'Глава';
+
+                if (sessions.length === 1) {
+                    const s = sessions[0];
+                    box.innerHTML = `
+                    <span class="editor-badge" title="Документ открыт">
+                        <span class="icon">👤</span>
+                        <span>${escapeHtml(s.username)}</span>
+                    </span>
+                `;
+                } else {
+                    box.innerHTML = `
+                    <span class="editor-badge multi" title="Документ открыт несколькими пользователями">
+                        <span class="icon">👥</span>
+                        <span>${sessions.length}</span>
+                    </span>
+                `;
+                }
+
+                const badge = box.querySelector('.editor-badge');
+                if (badge) {
+                    badge.addEventListener('click', (ev) => {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        showPop(badge, chapterName, sessions);
+                    });
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadEditors);
+        } else {
+            loadEditors();
+        }
+
+        setInterval(loadEditors, 30000);
+    })();
+</script>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Сборка отчета</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .muted { color: #777; }
+    .bar { height: 14px; background: #eee; border-radius: 8px; overflow: hidden; }
+    .bar > div { height: 14px; background: #3498db; width: 0%; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
+    .flash-message {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      min-width: 280px;
+      max-width: 420px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+      animation: fadeInSlide 0.25s ease, fadeOut 0.4s ease 4.6s forwards;
+    }
+
+    .flash-success {
+      background: #27ae60;
+    }
+
+    .flash-error {
+      background: #c0392b;
+    }
+
+    @keyframes fadeInSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-8px) translateX(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) translateX(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: translateY(-6px);
+        visibility: hidden;
+      }
+    }
+  </style>
+</head>
+<body>
+<!-- Flash сообщения -->
+<div th:if="${success}" class="flash-message flash-success" id="flashSuccess">
+  <span th:text="${success}">Успешное сообщение</span>
+</div>
+
+<div th:if="${error}" class="flash-message flash-error" id="flashError">
+  <span th:text="${error}">Сообщение об ошибке</span>
+</div>
+
+<h2 th:text="'Проект: ' + ${project.name}"></h2>
+<h3 th:text="'Раздел: ' + ${section.name}"></h3>
+<a th:href="@{/project/{projectId}/{sectionId}(projectId=${project.id}, sectionId=${section.id})}"
+   class="btn btn-link">← Назад</a>
+
+<div class="card" th:if="${currentJob != null}">
+  <h3>Текущая сборка</h3>
+  <div class="muted">
+    jobId: <span id="jobId" th:text="${currentJob.id}"></span>,
+    state: <span id="jobState" th:text="${currentJob.state}"></span>
+  </div>
+  <div style="margin-top:10px;">
+    <div class="bar"><div id="progressBar"></div></div>
+    <div class="muted" style="margin-top:6px;">
+      <span id="stageText" th:text="${currentJob.stage}"></span>
+      (<span id="progressText" th:text="${currentJob.progress}">0</span>%)
+    </div>
+    <div id="errorBlock" style="display:none; color:#c0392b; margin-top:10px;"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>История сборок</h3>
+  <table>
+    <thead>
+    <tr>
+      <th>jobId</th>
+      <th>State</th>
+      <th>Progress</th>
+      <th>Stage</th>
+      <th>Created</th>
+      <th>Type</th>
+      <th>Result</th>
+      <th>Действие</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="j : ${jobs}">
+      <td>
+        <a th:href="@{/project/{p}/{s}/build(p=${project.id}, s=${section.id}, jobId=${j.id})}"
+           th:text="${j.id}"></a>
+      </td>
+      <td th:text="${j.state}"></td>
+      <td th:text="${j.progress}"></td>
+      <td th:text="${j.stage}"></td>
+      <td th:text="${j.createdAt}"></td>
+      <td th:text="${j.buildType == T(com.portal.build.model.BuildType).REVIEW ? 'Для ГИП' : 'Обычная'}"></td>
+      <td>
+        <a th:if="${j.resultFileId != null}"
+           th:href="@{/api/files/download/{chapterId}(chapterId=${j.resultFileId})}">
+          Скачать
+        </a>
+        <span th:if="${j.resultFileId == null}">—</span>
+      </td>
+      <td>
+        <form th:if="${j.resultFileId != null and j.buildType == T(com.portal.build.model.BuildType).REVIEW and j.state == T(com.portal.build.model.BuildJob.State).BUILDING}"
+              th:action="@{/project/{p}/{s}/build/{jobId}/send-to-gip(p=${project.id}, s=${section.id}, jobId=${j.id})}"
+              method="post"
+              style="display:inline;">
+          <button type="submit">Отправить ГИП</button>
+        </form>
+      </td>
+
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<script th:if="${currentJob != null}">
+  const jobId = document.getElementById('jobId').innerText;
+
+  async function poll() {
+    try {
+      const r = await fetch(`/api/build/jobs/${jobId}`);
+      if (!r.ok) return;
+      const j = await r.json();
+
+      document.getElementById('jobState').innerText = j.state;
+      document.getElementById('stageText').innerText = j.stage || '';
+      document.getElementById('progressText').innerText = j.progress ?? 0;
+
+      const p = Math.max(0, Math.min(100, j.progress ?? 0));
+      document.getElementById('progressBar').style.width = p + '%';
+
+      const err = document.getElementById('errorBlock');
+      if (j.errorMessage) {
+        err.style.display = 'block';
+        err.innerText = j.errorMessage;
+      } else {
+        err.style.display = 'none';
+      }
+
+      // прекращаем polling если финальный статус
+      if (['DONE','FAILED','CANCELED'].includes(j.state)) return;
+
+    } catch (e) {
+      // молча
+    }
+    setTimeout(poll, 1500);
+  }
+
+  poll();
+</script>
+<script>
+  setTimeout(() => {
+    const success = document.getElementById('flashSuccess');
+    const error = document.getElementById('flashError');
+    if (success) success.remove();
+    if (error) error.remove();
+  }, 5000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  psd:
+    image: psd
+    build: .
+    container_name: psd
+    ports:
+      - "8070:8070"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/psd
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=69gidadi
+      - FILE_STORAGE_PATH=/app/file-storage
+      - ONLYOFFICE_JWT_SECRET=supersecret
+      - WORK_DIR=./file-storage
+      - DOCUMENT_PROCESSOR_URL=http://doc-processor:8000
+      - SSL_KEYSTORE_PASSWORD=69gidadi
+      - APP_INTERNAL_TOKEN=supersecret-internal
+      - ONLYOFFICE_API_URL=http://ink-aae:8071/web-apps/apps/api/documents/api.js #здесь
+      - PORTAL_INTERNAL_URL=http://psd:8070
+      - PORTAL_PUBLIC_URL=https://ink-aae:8070
+      - ONLYOFFICE_PUBLIC_URL=https://ink-aae:8071 #здесь
+    volumes:
+      - ./file-storage:/app/file-storage
+      - ./logs:/app/logs
+      - ./certs:/app/certs:ro
+    restart: unless-stopped
+    networks:
+      - psd_net
+
+  onlyoffice:
+    image: onlyoffice/documentserver:9.3.1
+    container_name: onlyofficePsd
+    restart: always
+    ports:
+      - "8071:80"   # доступ снаружи по http://localhost:8071
+    environment:
+      - ALLOW_PRIVATE_IP_ADDRESS=true
+      - ALLOW_PRIVATE_IP=true
+      - JWT_ENABLED=true
+      - JWT_SECRET=supersecret
+      - JWT_HEADER=Authorization
+    networks:
+      - psd_net
+
+  database:
+    image: postgres:16-alpine
+    container_name: databasePsd
+    environment:
+      POSTGRES_DB: psd
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 69gidadi
+    ports:
+      - "5436:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - psd_net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d psd" ]  # юзер должен совпадать
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  psd_net:
+    name: psd_net

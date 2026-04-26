@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link th:href="@{/css/project.css}" rel="stylesheet" type="text/css">
+    <title>Проект - Web Portal</title>
+
+    <style id="psd-theme-inline">
+:root{--coral:#E27D60;--mint:#85DCB0;--sand:#E8A87C;--mauve:#C38D9E;--teal:#41B3A3;--ink:#25302F;--soft:#485452;--bg:#F4F2EE;--panel:#FFFFFF;--panel2:#FAF8F5;--border:#D9D6CF;--border2:#B9B4AA;--radius:8px;--shadow:0 6px 18px rgba(37,48,47,.08)}
+*{box-sizing:border-box}html,body{background:var(--bg)!important;color:var(--ink)!important;background-image:none!important}body{font-family:"Segoe UI",Arial,sans-serif!important}body:before,body:after{display:none!important;content:none!important}.navbar{background:var(--ink)!important;background-image:none!important;color:#fff!important;border-bottom:4px solid var(--teal)!important;box-shadow:none!important}.nav-container{max-width:1280px!important}.logo{color:#fff!important;font-weight:700!important;letter-spacing:.02em}.logo:before{content:"";display:inline-block;width:12px;height:30px;background:var(--teal);margin-right:10px;vertical-align:middle}.nav-links a,.logout-btn{background:transparent!important;background-image:none!important;color:#fff!important;border:1px solid rgba(255,255,255,.22)!important;border-radius:4px!important;text-decoration:none!important}.nav-links a:hover,.logout-btn:hover{background:#354241!important;color:#fff!important}.container{max-width:1280px!important}.header,.project-header{border-bottom:1px solid var(--border)!important;padding-bottom:1rem!important}.page-title,.project-title,.section-title,.generate-title{color:var(--ink)!important;font-weight:700!important;letter-spacing:.01em}.text-muted,.project-description,.meta-value,.no-assignments,.empty-state,.generate-description{color:var(--soft)!important}.project-info,.files-section,.assign-form,.add-file-form,.generate-section,.statistics-compact,.section-logs-block,.modal-content,.empty-state,.project-card,.section-card,.quick-actions,.stats-grid>*,.meta-item,.assigned-users{background:var(--panel)!important;background-image:none!important;border:1px solid var(--border)!important;border-radius:var(--radius)!important;box-shadow:var(--shadow)!important}.project-info,.files-section,.assign-form,.add-file-form,.generate-section,.statistics-compact,.section-logs-block{border-top:4px solid var(--teal)!important}.project-card,.section-card{position:relative;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease!important}.project-card:before,.section-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--teal)}.project-card:hover,.section-card:hover{transform:none!important;border-color:var(--teal)!important;box-shadow:0 8px 22px rgba(37,48,47,.12)!important}.meta-item{box-shadow:none!important;background:var(--panel2)!important;border-left:4px solid var(--mint)!important}.meta-label{color:var(--ink)!important;font-weight:700!important;text-transform:uppercase;font-size:.76rem!important;letter-spacing:.04em}.btn,.btn-primary,.btn-success,.btn-action,.btn-generate,.btn-generate-modern,.btn-primary-modern,.btn-success-modern,button[type="submit"]:not(.logout-btn){background:var(--teal)!important;background-image:none!important;color:#fff!important;border:1px solid #2F8F80!important;border-radius:4px!important;box-shadow:none!important;font-weight:600!important;text-decoration:none!important}.btn:hover,.btn-primary:hover,.btn-success:hover,.btn-action:hover,.btn-generate:hover,.btn-generate-modern:hover,.btn-primary-modern:hover,.btn-success-modern:hover,button[type="submit"]:not(.logout-btn):hover{background:#2F8F80!important;background-image:none!important;border-color:#28786C!important;transform:none!important;box-shadow:none!important}.btn-secondary,.btn-secondary-modern{background:#EFE8E4!important;background-image:none!important;color:var(--ink)!important;border:1px solid var(--border2)!important}.btn-secondary:hover,.btn-secondary-modern:hover{background:#E3DAD5!important;color:var(--ink)!important}.btn-delete,.btn-danger,.btn-process,span.btn[onclick*="delete"],button[onclick*="Удалить"],button[onclick*="delete"]{background:var(--coral)!important;background-image:none!important;color:#fff!important;border-color:#C7664F!important}.form-control,.form-control-sm,.status-select,input,select,textarea{background:#fff!important;color:var(--ink)!important;border:1px solid var(--border2)!important;border-radius:4px!important;box-shadow:none!important}.form-control:focus,.form-control-sm:focus,.status-select:focus,input:focus,select:focus,textarea:focus{outline:2px solid rgba(65,179,163,.25)!important;border-color:var(--teal)!important}.badge,.section-badge,.assignment-count,.log-count,.badge-active,.status-generated,.status-ready,.status-ready-badge{background:var(--teal)!important;background-image:none!important;color:#fff!important;border:1px solid #2F8F80!important;border-radius:4px!important}.bg-primary{background:var(--mauve)!important;color:#fff!important}.status-not-generated,.status-cancelled,.status-cancelled-badge{background:var(--coral)!important;background-image:none!important;color:#fff!important;border-color:#C7664F!important}.status-in-work,.status-in-work-badge{background:#F2E4D5!important;color:#6D4B20!important;border-color:var(--sand)!important}.files-table,.sticky-table{border-collapse:separate!important;border-spacing:0!important}.files-table th,.sticky-table thead th{background:var(--ink)!important;background-image:none!important;color:#fff!important;border-bottom:2px solid var(--teal)!important}.files-table td{background:#fff!important;border-bottom:1px solid var(--border)!important}.files-table tbody tr:hover td{background:#F6FBFA!important}.file-link,.project-title a{color:#277F74!important;font-weight:700!important;text-decoration:none!important}.file-link:hover,.project-title a:hover{color:var(--coral)!important;text-decoration:underline!important}.table-container{border:1px solid var(--border)!important;border-radius:var(--radius)!important;background:#fff!important}.alert-success,.toast-success{background:#E8F6F3!important;background-image:none!important;color:#1F5F56!important;border:1px solid var(--teal)!important}.alert-error,.toast-error{background:#F9E7E1!important;background-image:none!important;color:#8A3D2E!important;border:1px solid var(--coral)!important}.toast-message{border-radius:4px!important;box-shadow:0 8px 20px rgba(37,48,47,.16)!important}.lamp,.editor-badge{background:#fff!important;background-image:none!important;border:1px solid var(--border2)!important;border-radius:4px!important;color:var(--ink)!important}.lamp.ok .dot{background:var(--teal)!important}.lamp.warn .dot{background:var(--sand)!important}.lamp.err .dot{background:var(--coral)!important}.lamp.none .dot{background:#9CA3AF!important}.sync-pop,.editor-pop{background:#fff!important;background-image:none!important;border:1px solid var(--border2)!important;border-radius:var(--radius)!important;box-shadow:0 10px 28px rgba(37,48,47,.16)!important}.section-logs-block summary{background:var(--panel2)!important;background-image:none!important;color:var(--ink)!important}.section-log-row,.log-open,.log-save,.log-restore,.log-delete,.log-status,.log-close{background:#fff!important;background-image:none!important;border-left-color:var(--teal)!important}.log-delete{border-left-color:var(--coral)!important}.log-status{border-left-color:var(--sand)!important}.log-restore{border-left-color:var(--mauve)!important}.modal{background:rgba(37,48,47,.48)!important}.modal-header{border-bottom:1px solid var(--border)!important}@media(max-width:768px){.navbar{padding:.75rem 1rem!important}.nav-container,.nav-links,.header,.project-header{gap:.75rem!important}}
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">Конструктор ПCД</div>
+        <div class="nav-links">
+<!--            <a th:href="@{/projects}" class="btn-secondary">← Назад к проектам</a>-->
+            <a th:href="@{/projects}">📋 Проекты</a>
+            <a sec:authorize="hasAnyRole('ADMIN')" th:href="@{/admin}" >⚙ Панель администратора </a>
+            <div class="user-info">
+<!--                <span th:text="${user.name}">Пользователь</span>-->
+<!--                <div class="user-avatar">-->
+<!--                    <span>U</span>-->
+<!--                </div>-->
+                <form th:action="@{/logout}" method="post" style="display: inline;"
+                      onsubmit="localStorage.removeItem('onlyoffice-editor-open');">
+                    <button type="submit" class="logout-btn">Сбросить сеансы</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Flash сообщения -->
+    <div th:if="${success}" class="alert-success" id="flashSuccess">
+        <span th:text="${success}">Успешное сообщение</span>
+    </div>
+    <div th:if="${error}" class="alert-error" id="flashError">
+        <span th:text="${error}">Сообщение об ошибке</span>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1 class="page-title" th:text="${project.name}">📁 Название проекта</h1>
+        <div class="btn-group">
+            <span sec:authorize="hasAnyRole('ADMIN')"
+                    th:onclick="|deleteProject(${project.id})|" class="btn">→ Удалить</span>
+<!--            <button class="btn btn-secondary">Настройки проекта</button>-->
+        </div>
+    </div>
+
+    <!-- Project Information -->
+    <div class="project-info">
+        <div class="project-header">
+            <div>
+<!--                <h2 class="project-title" th:text="${project.name}">Разработка новой системы документооборота</h2>-->
+                <p class="project-description" th:text="${project.getDescription()}">
+
+                </p>
+            </div>
+            <div class="project-status">
+<!--                <h2 class="badge" th:if="${project.getGeneral() != null}" th:text="${project.getGeneral().getName()}"></h2>-->
+            </div>
+        </div>
+
+        <div class="project-meta">
+            <div class="meta-item">
+                <div class="meta-label">Создан</div>
+                <div class="meta-value" th:text="${T(com.psd.service.DateUtils).format(project.getCreatedAt())}">15.12.2023</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Автор</div>
+                <div class="meta-value" th:text="${project.createdBy.name}">Иван Иванов</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Всего глав</div>
+<!--                <div class="meta-value" th:text="${size}">8</div>-->
+                <div class="meta-value">2</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Последнее обновление</div>
+                <div class="meta-value" th:text="${lastUpdate}">20.12.2023 14:30</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Files List -->
+    <div class="files-section">
+        <div class="section-title">
+            <span>📚 Доступные разделы</span>
+            <span class="badge" th:text="${sectionStatuses.size()}"></span>
+        </div>
+
+        <div class="card-body">
+            <div th:if="${sectionStatuses.isEmpty()}" class="text-center py-4">
+                <p class="text-muted">Нет доступных разделов</p>
+            </div>
+
+            <div th:unless="${sectionStatuses.isEmpty()}" class="sections-grid">
+                <div th:each="sectionStatus : ${sectionStatuses}" class="section-card">
+                    <div class="section-header">
+                        <h4 class="section-name" th:text="${sectionStatus.section.name}"></h4>
+                        <span class="section-badge" th:classappend="${sectionStatus.badgeClass}"
+                              th:text="${sectionStatus.statusText}"></span>
+                    </div>
+
+                    <div style="display: flex">
+                        <!-- Кнопка для перехода по ссылке -->
+                        <div th:if="${sectionStatus.generated}">
+                            <a th:href="@{/project/{projectId}/{sectionId}(projectId=${project.id}, sectionId=${sectionStatus.section.id})}"
+                               class="btn btn-secondary btn-sm">
+                                Редактировать
+                            </a>
+                        </div>
+<!--                        <div>-->
+<!--                            <a th:if="${sectionStatus.getResultChapterId() != null}"-->
+<!--                               th:href="@{/api/files/{chapterId}(chapterId= ${sectionStatus.getResultChapterId()})}"-->
+<!--                               class="btn btn-secondary btn-sm">Сформированный раздел</a>-->
+<!--                        </div>-->
+                        <div th:if="${!sectionStatus.generated}" style="padding-right: 4px">
+                            <form method="post" class="d-inline">
+                                <button type="submit" class="btn-action btn-generate">
+                                    <span class="btn-icon">📤</span>
+                                    <span>Скопировать</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <div th:if="${!sectionStatus.generated}">
+                            <form th:action="@{/projects/{projectId}/documents/sections/{sectionId}/generate(projectId=${project.id}, sectionId=${sectionStatus.section.id})}"
+                                  method="post" class="d-inline">
+                                <button type="submit" class="btn-action btn-generate">
+                                    <span class="btn-icon" th:text="${sectionStatus.buttonIcon}"></span>
+                                    <span th:text="${sectionStatus.buttonText}"></span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- Блок с назначенными пользователями -->
+                    <div class="assigned-users" th:if="${not sectionStatus.assignedUsers.isEmpty()}">
+                        <div class="assignment-header">
+                            <div class="meta-label">Ответственные:</div>
+                            <span class="assignment-count" th:text="${sectionStatus.assignedUsers.size()}"></span>
+                        </div>
+                        <div th:each="user : ${sectionStatus.assignedUsers}" class="assigned-user">
+                            <span th:text="${user.name}"></span>
+                        </div>
+                    </div>
+                    <div th:if="${sectionStatus.assignedUsers.isEmpty()}" class="assigned-users">
+                        <div class="no-assignments">Ответственные не назначены</div>
+                    </div>
+                    <div class="section-actions">
+                        <!-- Форма назначения ответственного (только для создателя проекта с ролью EMPLOYEE и любому ADMIN) -->
+                        <div th:if="${isProjectCreator}" class="assignment-form">
+                            <form th:action="@{/projects/{projectId}/documents/sections/{sectionId}/assign(projectId=${project.id}, sectionId=${sectionStatus.section.id})}"
+                                  method="post" class="d-inline">
+                                <select name="userId" class="form-control-sm">
+                                    <option value="">-- Открыть доступ --</option>
+                                    <option th:each="contractor : ${availableContractors}"
+                                            th:value="${contractor.id}"
+                                            th:text="${contractor.name} + ' (' + ${contractor.email} + ')'">
+                                    </option>
+                                </select>
+                                <button type="submit" class="btn-action btn-assign">
+                                    <span class="btn-icon">👤</span>
+                                    Назначить/Удалить
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Показываем сообщения из flash атрибутов
+    document.addEventListener('DOMContentLoaded', function() {
+        // Автоматически скрываем flash сообщения через 5 секунд
+        const flashMessages = document.querySelectorAll('.alert-success, .alert-error');
+        flashMessages.forEach(message => {
+            setTimeout(() => {
+                message.remove();
+            }, 4000);
+        });
+
+        // Добавляем обработчик для форм назначения
+        document.querySelectorAll('.assignment-form form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const select = this.querySelector('select[name="userId"]');
+                if (!select.value) {
+                    e.preventDefault();
+                    alert('Пожалуйста, выберите ответственного пользователя');
+                    return false;
+                }
+
+            });
+        });
+    });
+    function deleteProject(id) {
+        const confirmed = confirm(
+            'Вы точно хотите удалить проект?\nУбедитесь что данные сохранены.'
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        fetch(`/projects/delete/${id}`, { method: 'DELETE' })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка при удалении проекта');
+                }
+
+                // alert('Проект успешно удалён');
+                window.location.href = '/projects';
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Не удалось удалить проект');
+            });
+    }
+
+    function showSectionInfo(sectionId) {
+        alert(`Информация о разделе ID: ${sectionId}\nЗдесь можно показать детальную информацию о разделе.`);
+    }
+</script>
+</body>
+</html>

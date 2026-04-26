@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>SSO iframe test</title>
+    <style>
+        body { font-family: sans-serif; margin: 16px; }
+        .row { display: flex; gap: 12px; flex-wrap: wrap; }
+        input { width: 520px; max-width: 100%; padding: 8px; }
+        button { padding: 8px 14px; cursor: pointer; }
+        iframe { width: 100%; height: 80vh; border: 1px solid #ccc; margin-top: 12px; }
+        .hint { color: #555; margin: 8px 0; }
+        .url { font-family: monospace; white-space: pre-wrap; word-break: break-all; }
+    </style>
+</head>
+<body>
+<h2>Тест SSO через iframe</h2>
+
+<p class="hint">
+    Эта страница создаёт iframe, который вызывает <code>/</code> с параметрами
+    <code>objectId</code>, <code>url</code>, <code>token</code>.
+    Портал должен авторизоваться и внутри iframe перейти на рабочую страницу.
+</p>
+
+<div class="row">
+    <div>
+        <div>objectId</div>
+        <input id="objectId" value="[[${objectId}]]">
+    </div>
+    <div>
+        <div>corp url</div>
+        <input id="corpUrl" value="[[${corpUrl}]]">
+    </div>
+</div>
+
+<div style="margin-top:10px;">
+    <div>token (JWT)</div>
+    <input id="token" value="[[${token}]]" placeholder="вставь JWT сюда">
+</div>
+
+<div style="margin-top:10px;" class="row">
+    <button onclick="loadIframe()">Загрузить iframe (SSO)</button>
+    <button onclick="clearIframe()">Очистить</button>
+</div>
+
+<div class="hint">URL, который будет загружен в iframe:</div>
+<div class="url" id="builtUrl"></div>
+
+<iframe id="frame" src="about:blank"></iframe>
+
+<script>
+    function enc(v){ return encodeURIComponent(v ?? ""); }
+
+    function buildUrl(){
+        const objectId = document.getElementById("objectId").value.trim();
+        const corpUrl  = document.getElementById("corpUrl").value.trim();
+        const token    = document.getElementById("token").value.trim();
+
+        // ВАЖНО: грузим корень "/" (как у тебя SSO на /)
+        // url параметр называется именно "url", как в вашем контракте
+        return `/?objectId=${enc(objectId)}&url=${enc(corpUrl)}&token=${enc(token)}`;
+    }
+
+    function loadIframe(){
+        const token = document.getElementById("token").value.trim();
+        if(!token){
+            alert("Вставь token (JWT) в поле token");
+            return;
+        }
+        const url = buildUrl();
+        document.getElementById("builtUrl").textContent = url;
+        document.getElementById("frame").src = url;
+    }
+
+    function clearIframe(){
+        document.getElementById("frame").src = "about:blank";
+        document.getElementById("builtUrl").textContent = "";
+    }
+
+    // если token уже передали query-параметром на /test/iframe — можно автозагрузить
+    window.addEventListener("load", () => {
+        const token = document.getElementById("token").value.trim();
+        if(token) loadIframe();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Список Генеральных</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .nav-links a.active {
+            background-color: #3498db;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: white;
+            color: #2c3e50;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">Конструктор ПД</div>
+        <div class="nav-links">
+            <!--            <a th:href="@{/projects}" class="btn-secondary">← Назад к проектам</a>-->
+            <a th:href="@{/projects}">📋 Проекты</a>
+            <a sec:authorize="hasAnyRole('ADMIN')" th:href="@{/admin}" >⚙ Панель администратора </a>
+            <div class="user-info">
+<!--                <span th:text="${user.name}">Пользователь</span>-->
+<!--                <div class="user-avatar">-->
+<!--                    <span>U</span>-->
+<!--                </div>-->
+                <form th:action="@{/logout}" method="post" style="display: inline;"
+                      onsubmit="localStorage.removeItem('onlyoffice-editor-open');">
+                    <button type="submit" class="logout-btn">Сбросить сеансы</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+<!-- Main Content -->
+<div class="container">
+    <div class="container mt-4">
+        <!-- Вверху после заголовка -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Шаблоны проектов</h1>
+            <div>
+                <a th:href="@{/admin/generals/sections}" class="btn btn-outline-primary me-2">
+                    Управление разделами
+                </a>
+
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th style=" width: 350px;"><a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGeneralModal">Добавить шаблон проекта</a></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="general : ${generals}">
+                        <td th:text="${general.id}"></td>
+                        <td th:text="${general.name}"></td>
+                        <td>
+                            <a th:href="@{/admin/generals/{id}(id=${general.id})}"
+                               class="btn btn-sm btn-outline-primary">Открыть</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal для добавления General -->
+    <div class="modal fade" id="addGeneralModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/admin/generals}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Добавить новый Генеральный</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Название</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+<!--                        <div class="mb-3">-->
+<!--                            <label for="src" class="form-label">Путь</label>-->
+<!--                            <input type="text" class="form-control" id="src" name="src" >-->
+<!--                        </div>-->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

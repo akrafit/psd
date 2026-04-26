@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${chapter.name}">Документ</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .oo-topbar {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #3d4b5a;
+      color: #fff;
+      padding: 0 16px;
+      box-sizing: border-box;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .oo-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .oo-back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #fff;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 20px;
+      line-height: 1;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .oo-back-btn:hover {
+      background: rgba(255,255,255,0.16);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .oo-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70vw;
+    }
+
+    .oo-chapter-title {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-left: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 30vw;
+    }
+
+    #officeFrame {
+      width: 100%;
+      height: calc(100vh - 48px);
+      border: none;
+    }
+  </style>
+
+  <!-- API OnlyOffice -->
+  <script type="text/javascript"
+          th:src="${api}"
+          src="http://localhost:8083/web-apps/apps/api/documents/api.js"></script>
+</head>
+<body>
+
+<div class="oo-topbar">
+  <div class="oo-topbar-left">
+    <a class="oo-back-btn"
+       th:href="@{/admin/generals/{generalId}(generalId=${generalId})}"
+       title="Назад">
+      ←
+    </a>
+  </div>
+</div>
+
+<!-- контейнер для редактора -->
+<div id="officeFrame"></div>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  fetch("/onlyoffice/config/" + [[${chapter.id}]])
+          .then(r => r.json())
+          .then(config => {
+            var docEditor = new DocsAPI.DocEditor("officeFrame", config);
+          });
+  /*]]>*/
+</script>
+
+<script>
+  window.addEventListener("beforeunload", function () {
+    navigator.sendBeacon("/api/onlyoffice/sessions/close");
+  });
+</script>
+
+<script>
+  (function () {
+    const EDITOR_LOCK_KEY = "onlyoffice-editor-open";
+    const TAB_ID = (window.crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : ("tab-" + Date.now() + "-" + Math.random().toString(16).slice(2));
+
+    const LOCK_TTL_MS = 15000;
+    const HEARTBEAT_MS = 5000;
+
+    let heartbeatTimer = null;
+
+    function now() {
+      return Date.now();
+    }
+
+    function readLock() {
+      try {
+        const raw = localStorage.getItem(EDITOR_LOCK_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function writeLock() {
+      const payload = {
+        tabId: TAB_ID,
+        ts: now()
+      };
+      localStorage.setItem(EDITOR_LOCK_KEY, JSON.stringify(payload));
+    }
+
+    function isLockAlive(lock) {
+      if (!lock || !lock.ts) return false;
+      return (now() - lock.ts) < LOCK_TTL_MS;
+    }
+
+    function isMyLock(lock) {
+      return lock && lock.tabId === TAB_ID;
+    }
+
+    function removeMyLock() {
+      const current = readLock();
+      if (isMyLock(current)) {
+        localStorage.removeItem(EDITOR_LOCK_KEY);
+      }
+    }
+
+    function notifyServerClose() {
+      try {
+        navigator.sendBeacon("/api/onlyoffice/sessions/close");
+      } catch (e) {
+      }
+    }
+
+    function handleBlockedOpen() {
+      alert("У вас уже открыт документ в другой вкладке.");
+      window.location.href = document.referrer || "/";
+    }
+
+    function acquireLock() {
+      const current = readLock();
+
+      if (!current) {
+        writeLock();
+        return true;
+      }
+
+      if (isMyLock(current)) {
+        writeLock();
+        return true;
+      }
+
+      if (!isLockAlive(current)) {
+        writeLock();
+        return true;
+      }
+
+      return false;
+    }
+
+    function startHeartbeat() {
+      heartbeatTimer = setInterval(function () {
+        const current = readLock();
+
+        if (!current || isMyLock(current) || !isLockAlive(current)) {
+          writeLock();
+        } else {
+          clearInterval(heartbeatTimer);
+          heartbeatTimer = null;
+          handleBlockedOpen();
+        }
+      }, HEARTBEAT_MS);
+    }
+
+    function cleanup() {
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
+      }
+      removeMyLock();
+      notifyServerClose();
+    }
+
+    if (!acquireLock()) {
+      handleBlockedOpen();
+      return;
+    }
+
+    startHeartbeat();
+
+    window.addEventListener("beforeunload", cleanup);
+    window.addEventListener("pagehide", cleanup);
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "hidden") {
+        notifyServerClose();
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>
